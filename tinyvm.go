@@ -151,8 +151,8 @@ func (tm *TinyMachine) resetState() {
 }
 
 func (tm *TinyMachine) stepProgram() {
-	if tm.cpustate == cpuHALTED {
-		return
+	if tm.cpustate != cpuHALTED {
+		tm.handleCpuState()
 	}
 
 	pc := tm.registers[PC_REG]
@@ -239,29 +239,35 @@ func (tm *TinyMachine) stepProgram() {
 			}
 		}
 	}
+
+	tm.handleCpuState()
+}
+
+func (tm *TinyMachine) handleCpuState() {
+	switch tm.cpustate {
+	case cpuOK:
+		break
+	case cpuDIV_ZERO:
+		fmt.Println("Divide by zero error.")
+		fallthrough
+	case cpuIMEM_ERR:
+		fmt.Println("Instruction memory access violation.")
+		fmt.Println("PC was", tm.registers[PC_REG])
+		fallthrough
+	case cpuDMEM_ERR:
+		fmt.Println("Data memory access violation.")
+		fallthrough
+	default:
+		fmt.Println("Program halted.")
+		tm.cpustate = cpuHALTED
+	}
 }
 
 func (tm *TinyMachine) runProgram() {
 	for {
-		if tm.cpustate != cpuOK {
-			switch tm.cpustate {
-			case cpuDIV_ZERO:
-				fmt.Println("Divide by zero error.")
-				fallthrough
-			case cpuIMEM_ERR:
-				fmt.Println("Instruction memory access violation.")
-				fmt.Println("PC was", tm.registers[PC_REG])
-				fallthrough
-			case cpuDMEM_ERR:
-				fmt.Println("Data memory access violaation.")
-				fallthrough
-			default:
-				fmt.Println("Program halted.")
-				tm.cpustate = cpuHALTED
-			}
+		tm.stepProgram()
+		if tm.cpustate == cpuHALTED {
 			break
-		} else {
-			tm.stepProgram()
 		}
 	}
 }
