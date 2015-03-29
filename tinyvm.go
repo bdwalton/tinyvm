@@ -252,14 +252,14 @@ func (tm *TinyMachine) handleCpuState() {
 		fallthrough
 	case cpuIMEM_ERR:
 		fmt.Println("Instruction memory access violation.")
-		fmt.Println("PC was", tm.registers[PC_REG])
 		fallthrough
 	case cpuDMEM_ERR:
 		fmt.Println("Data memory access violation.")
 		fallthrough
+	case cpuHALT:
+		fallthrough
 	default:
 		fmt.Println("Program halted.")
-		tm.cpustate = cpuHALTED
 	}
 }
 
