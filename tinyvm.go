@@ -151,8 +151,9 @@ func (tm *TinyMachine) resetState() {
 }
 
 func (tm *TinyMachine) stepProgram() {
-	if tm.cpustate != cpuHALTED {
+	if tm.cpustate != cpuOK {
 		tm.handleCpuState()
+		return
 	}
 
 	pc := tm.registers[PC_REG]
@@ -256,7 +257,7 @@ func (tm *TinyMachine) handleCpuState() {
 	case cpuDMEM_ERR:
 		fmt.Println("Data memory access violation.")
 		fallthrough
-	case cpuHALT:
+	case cpuHALTED:
 		fallthrough
 	default:
 		fmt.Println("Program halted.")
@@ -266,7 +267,7 @@ func (tm *TinyMachine) handleCpuState() {
 func (tm *TinyMachine) runProgram() {
 	for {
 		tm.stepProgram()
-		if tm.cpustate == cpuHALTED {
+		if tm.cpustate != cpuOK {
 			break
 		}
 	}
