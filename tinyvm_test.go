@@ -129,7 +129,7 @@ func TestParseInstruction(t *testing.T) {
 func TestResetState(t *testing.T) {
 	var tm TinyMachine
 
-	tm.halted = true
+	tm.cpustate = cpuHALTED
 	tm.instruction_memory[0] = TinyInstruction{"LDC", []int{1, 1, 1}}
 	tm.instruction_memory[MEM_SIZE-1] = TinyInstruction{"ADD", []int{1, 1, 1}}
 	tm.data_memory[0] = 1
@@ -138,7 +138,7 @@ func TestResetState(t *testing.T) {
 
 	tm.resetState()
 
-	if tm.halted {
+	if tm.cpustate != cpuOK {
 		t.Errorf("Resetting machine didn't clear halt state.")
 	} else if !reflect.DeepEqual(TinyInstruction{"LDC", []int{1, 1, 1}},
 		tm.instruction_memory[0]) {
@@ -156,7 +156,7 @@ func TestResetState(t *testing.T) {
 func TestInitializeMachine(t *testing.T) {
 	var tm TinyMachine
 
-	tm.halted = true
+	tm.cpustate = cpuDIV_ZERO
 	tm.instruction_memory[0] = TinyInstruction{"LDC", []int{1, 1, 1}}
 	tm.instruction_memory[MEM_SIZE-1] = TinyInstruction{"ADD", []int{1, 1, 1}}
 	tm.data_memory[0] = 1
@@ -165,7 +165,7 @@ func TestInitializeMachine(t *testing.T) {
 
 	tm.initializeMachine(true)
 
-	if tm.halted {
+	if tm.cpustate != cpuOK {
 		t.Errorf("Initializing machine didn't clear halt state.")
 	} else if !reflect.DeepEqual(TinyInstruction{"HALT", []int{0, 0, 0}}, tm.instruction_memory[0]) {
 		t.Errorf("Initializing machine didn't clear instruction memory.")

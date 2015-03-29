@@ -22,6 +22,14 @@ type TinyInstruction struct {
 	iargs []int
 }
 
+const (
+	cpuOK       = iota
+	cpuHALTED   = iota
+	cpuDIV_ZERO = iota
+	cpuIMEM_ERR = iota
+	cpuDMEM_ERR = iota
+)
+
 /* A structure representing a tiny machine */
 type TinyMachine struct {
 	stdin              *bufio.Reader             // To handle data input
@@ -29,7 +37,7 @@ type TinyMachine struct {
 	data_memory        [MEM_SIZE]int             // Data memory
 	instruction_memory [MEM_SIZE]TinyInstruction // Instruction memory
 	trace              bool                      // Output instructions as they're executed
-	halted             bool                      // True after executing a HALT instruction
+	cpustate           int                       // See cpu* constants above
 }
 
 // Operands are of the form r,s,t where r, s and t are all integers
@@ -130,7 +138,7 @@ func (tm *TinyMachine) initializeMachine(clearprogram bool) {
 
 	// Store the size of the memory in the first memory element.
 	tm.data_memory[0] = MEM_SIZE - 1
-	tm.halted = false
+	tm.cpustate = cpuOK
 	tm.registers[PC_REG] = 0
 	tm.stdin = bufio.NewReader(os.Stdin) // An io helper.
 }
@@ -162,7 +170,7 @@ func (tm *TinyMachine) stepProgram() (err error) {
 
 		switch instruction.iop {
 		case "HALT":
-			tm.halted = true
+			tm.cpustate = cpuHALTED
 			return nil
 		case "IN":
 			m := fmt.Sprintf("Enter number to store in register %d", r)
@@ -186,7 +194,7 @@ func (tm *TinyMachine) stepProgram() (err error) {
 		case "DIV":
 			if tm.registers[t] == 0 {
 				return errors.New("Divide by zero!")
-				tm.halted = true
+				tm.cpustate = cpuHALTED
 			} else {
 				tm.registers[r] = tm.registers[s] / tm.registers[t]
 			}
@@ -242,7 +250,7 @@ func (tm *TinyMachine) stepProgram() (err error) {
 
 func (tm *TinyMachine) runProgram() {
 	for {
-		if tm.halted {
+		if tm.cpustate == cpuHALTED {
 			break
 		} else {
 			tm.stepProgram()
