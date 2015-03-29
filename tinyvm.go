@@ -150,10 +150,14 @@ func (tm *TinyMachine) resetState() {
 	tm.initializeMachine(false)
 }
 
-func (tm *TinyMachine) stepProgram() (err error) {
+func (tm *TinyMachine) stepProgram() {
+	if tm.cpustate == cpuHALTED {
+		return
+	}
+
 	pc := tm.registers[PC_REG]
-	if pc < 0 || pc > MEM_SIZE {
-		return errors.New("Out of bounds instruction memory access.")
+	if pc < 0 || pc > MEM_SIZE-1 {
+		tm.cpustate = cpuIMEM_ERR
 	} else {
 		// Step the program counter
 		tm.registers[PC_REG] = pc + 1
@@ -171,18 +175,10 @@ func (tm *TinyMachine) stepProgram() (err error) {
 		switch instruction.iop {
 		case "HALT":
 			tm.cpustate = cpuHALTED
-			return nil
 		case "IN":
 			m := fmt.Sprintf("Enter number to store in register %d", r)
-			for {
-				n := tm.readNumber(m, 0)
-				if err != nil {
-					fmt.Println("Error reading input. Try again.")
-				} else {
-					tm.registers[r] = n
-					break
-				}
-			}
+			n := tm.readNumber(m, 0)
+			tm.registers[r] = n
 		case "OUT":
 			fmt.Println(tm.registers[r])
 		case "ADD":
@@ -193,14 +189,13 @@ func (tm *TinyMachine) stepProgram() (err error) {
 			tm.registers[r] = tm.registers[s] * tm.registers[t]
 		case "DIV":
 			if tm.registers[t] == 0 {
-				return errors.New("Divide by zero!")
-				tm.cpustate = cpuHALTED
+				tm.cpustate = cpuDIV_ZERO
 			} else {
 				tm.registers[r] = tm.registers[s] / tm.registers[t]
 			}
 		case "LDA":
 			if a < 0 || a > MEM_SIZE {
-				return errors.New("Out of bounds memory access.")
+				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.registers[r] = a
 			}
@@ -208,13 +203,13 @@ func (tm *TinyMachine) stepProgram() (err error) {
 			tm.registers[r] = s
 		case "LD":
 			if a < 0 || a > MEM_SIZE {
-				return errors.New("Out of bounds memory access.")
+				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.registers[r] = tm.data_memory[a]
 			}
 		case "ST":
 			if a < 0 || a > MEM_SIZE {
-				return errors.New("Out of bounds memory access.")
+				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.data_memory[a] = tm.registers[r]
 			}
@@ -244,13 +239,26 @@ func (tm *TinyMachine) stepProgram() (err error) {
 			}
 		}
 	}
-
-	return nil
 }
 
 func (tm *TinyMachine) runProgram() {
 	for {
-		if tm.cpustate == cpuHALTED {
+		if tm.cpustate != cpuOK {
+			switch tm.cpustate {
+			case cpuDIV_ZERO:
+				fmt.Println("Divide by zero error.")
+				fallthrough
+			case cpuIMEM_ERR:
+				fmt.Println("Instruction memory access violation.")
+				fmt.Println("PC was", tm.registers[PC_REG])
+				fallthrough
+			case cpuDMEM_ERR:
+				fmt.Println("Data memory access violaation.")
+				fallthrough
+			default:
+				fmt.Println("Program halted.")
+				tm.cpustate = cpuHALTED
+			}
 			break
 		} else {
 			tm.stepProgram()
