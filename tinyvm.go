@@ -155,43 +155,35 @@ func (tm *TinyMachine) stepProgram() (err error) {
 			fmt.Println("Executing:", instruction)
 		}
 
+		r := instruction.iargs[0]
+		s := instruction.iargs[1]
+		t := instruction.iargs[2]
+		a := s + tm.registers[t]
+
 		switch instruction.iop {
 		case "HALT":
 			tm.halted = true
 			return nil
 		case "IN":
-			reg := instruction.iargs[0]
-			m := fmt.Sprintf("Enter number to store in register %d", reg)
+			m := fmt.Sprintf("Enter number to store in register %d", r)
 			for {
 				n := tm.readNumber(m, 0)
 				if err != nil {
 					fmt.Println("Error reading input. Try again.")
 				} else {
-					tm.registers[reg] = n
+					tm.registers[r] = n
 					break
 				}
 			}
 		case "OUT":
-			fmt.Println(tm.registers[instruction.iargs[0]])
+			fmt.Println(tm.registers[r])
 		case "ADD":
-			r := instruction.iargs[0]
-			s := instruction.iargs[1]
-			t := instruction.iargs[2]
 			tm.registers[r] = tm.registers[s] + tm.registers[t]
 		case "SUB":
-			r := instruction.iargs[0]
-			s := instruction.iargs[1]
-			t := instruction.iargs[2]
 			tm.registers[r] = tm.registers[s] - tm.registers[t]
 		case "MUL":
-			r := instruction.iargs[0]
-			s := instruction.iargs[1]
-			t := instruction.iargs[2]
 			tm.registers[r] = tm.registers[s] * tm.registers[t]
 		case "DIV":
-			r := instruction.iargs[0]
-			s := instruction.iargs[1]
-			t := instruction.iargs[2]
 			if tm.registers[t] == 0 {
 				return errors.New("Divide by zero!")
 				tm.halted = true
@@ -199,65 +191,47 @@ func (tm *TinyMachine) stepProgram() (err error) {
 				tm.registers[r] = tm.registers[s] / tm.registers[t]
 			}
 		case "LDA":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
 			if a < 0 || a > MEM_SIZE {
 				return errors.New("Out of bounds memory access.")
 			} else {
-				tm.registers[instruction.iargs[0]] = a
+				tm.registers[r] = a
 			}
 		case "LDC":
-			tm.registers[instruction.iargs[0]] = instruction.iargs[1]
+			tm.registers[r] = s
 		case "LD":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
 			if a < 0 || a > MEM_SIZE {
 				return errors.New("Out of bounds memory access.")
 			} else {
-				tm.registers[instruction.iargs[0]] = tm.data_memory[a]
+				tm.registers[r] = tm.data_memory[a]
 			}
 		case "ST":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
 			if a < 0 || a > MEM_SIZE {
 				return errors.New("Out of bounds memory access.")
 			} else {
-				tm.data_memory[a] = tm.registers[instruction.iargs[0]]
+				tm.data_memory[a] = tm.registers[r]
 			}
 		case "JLT":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
-			if tm.registers[instruction.iargs[0]] < 0 {
+			if tm.registers[r] < 0 {
 				tm.registers[PC_REG] = a
 			}
 		case "JLE":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
-			if tm.registers[instruction.iargs[0]] <= 0 {
+			if tm.registers[r] <= 0 {
 				tm.registers[PC_REG] = a
 			}
 		case "JGE":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
-			if tm.registers[instruction.iargs[0]] >= 0 {
+			if tm.registers[r] >= 0 {
 				tm.registers[PC_REG] = a
 			}
 		case "JGT":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
-			if tm.registers[instruction.iargs[0]] > 0 {
+			if tm.registers[r] > 0 {
 				tm.registers[PC_REG] = a
 			}
 		case "JEQ":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
-			if tm.registers[instruction.iargs[0]] == 0 {
+			if tm.registers[r] == 0 {
 				tm.registers[PC_REG] = a
 			}
 		case "JNE":
-			d := instruction.iargs[1]
-			a := d + tm.registers[instruction.iargs[2]]
-			if tm.registers[instruction.iargs[0]] != 0 {
+			if tm.registers[r] != 0 {
 				tm.registers[PC_REG] = a
 			}
 		}
