@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"reflect"
 	"testing"
 )
@@ -209,5 +210,50 @@ func TestDIVInstruction(t *testing.T) {
 	tm.stepProgram()
 	if tm.cpustate != cpuDIV_ZERO {
 		t.Errorf("DIV by 0 didn't set correct cpu state.")
+	}
+}
+
+func TestADDInstruction(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+	// Stuff some values into the registers
+	tm.registers = [NUM_REGS]int{0, 1, 10, 2, 2, math.MaxInt32, 5, 0}
+
+	tm.instruction_memory[0] = TinyInstruction{"ADD", []int{0, 2, 3}, iopRO} // 10 + 2  -> reg0
+	tm.instruction_memory[1] = TinyInstruction{"ADD", []int{0, 3, 6}, iopRO} // 2 + 5   -> reg0
+	tm.instruction_memory[2] = TinyInstruction{"ADD", []int{0, 1, 0}, iopRO} // 1 + 7   -> reg0
+	tm.instruction_memory[3] = TinyInstruction{"ADD", []int{0, 1, 5}, iopRO} // 1 + MAX -> reg0
+
+	tm.stepProgram()
+	if tm.registers[0] != 12 {
+		t.Errorf("ADD 10 + 2 didn't work. Got %d.", tm.registers[0])
+		if tm.cpustate != cpuOK {
+			t.Errorf("ADD 10 + 2 worked, but cpustate is invalid.")
+		}
+	}
+
+	tm.stepProgram()
+	if tm.registers[0] != 7 {
+		t.Errorf("ADD 2 + 5 didn't work. Got %d.", tm.registers[0])
+		if tm.cpustate != cpuOK {
+			t.Errorf("ADD 2 + 5 worked, but cpustate is invalid.")
+		}
+	}
+
+	tm.stepProgram()
+	if tm.registers[0] != 8 {
+		t.Errorf("ADD 1 + 7 didn't work. Got %d.", tm.registers[0])
+		if tm.cpustate != cpuOK {
+			t.Errorf("ADD 1 + 7 worked, but cpustate is invalid.")
+		}
+	}
+
+	tm.stepProgram()
+	if tm.registers[0] != -2147483648 {
+		t.Errorf("ADD 1 + MAXINT didn't work. Got %d.", tm.registers[0])
+		if tm.cpustate != cpuOK {
+			t.Errorf("ADD 1 + MAXINT worked, but cpustate is invalid.")
+		}
 	}
 }
