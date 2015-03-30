@@ -22,12 +22,14 @@ type TinyInstruction struct {
 	iargs []int
 }
 
+type TinyCPUState int
+
 const (
-	cpuOK       = iota
-	cpuHALTED   = iota
-	cpuDIV_ZERO = iota
-	cpuIMEM_ERR = iota
-	cpuDMEM_ERR = iota
+	cpuOK TinyCPUState = iota
+	cpuHALTED
+	cpuDIV_ZERO
+	cpuIMEM_ERR
+	cpuDMEM_ERR
 )
 
 /* A structure representing a tiny machine */
@@ -37,7 +39,7 @@ type TinyMachine struct {
 	data_memory        [MEM_SIZE]int             // Data memory
 	instruction_memory [MEM_SIZE]TinyInstruction // Instruction memory
 	trace              bool                      // Output instructions as they're executed
-	cpustate           int                       // See cpu* constants above
+	cpustate           TinyCPUState              // See cpu* constants above
 }
 
 // Operands are of the form r,s,t where r, s and t are all integers
