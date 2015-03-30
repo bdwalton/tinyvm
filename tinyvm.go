@@ -251,17 +251,12 @@ func (tm *TinyMachine) handleCpuState() {
 	case cpuOK:
 		break
 	case cpuDIV_ZERO:
-		fmt.Println("Divide by zero error.")
-		fallthrough
+		fmt.Println("Divide by zero error. Program halted.")
 	case cpuIMEM_ERR:
-		fmt.Println("Instruction memory access violation.")
-		fallthrough
+		fmt.Println("Instruction memory access violation. Program halted.")
 	case cpuDMEM_ERR:
-		fmt.Println("Data memory access violation.")
-		fallthrough
+		fmt.Println("Data memory access violation. Program halted.")
 	case cpuHALTED:
-		fallthrough
-	default:
 		fmt.Println("Program halted.")
 	}
 }
