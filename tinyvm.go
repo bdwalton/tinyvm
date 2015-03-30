@@ -152,6 +152,10 @@ func parseInstruction(line string) (TinyInstruction, error) {
 	return ti, nil
 }
 
+func (tm *TinyMachine) speak(saywhat ...interface{}) {
+	fmt.Println(saywhat...)
+}
+
 func (tm *TinyMachine) initializeMachine(clearprogram bool) {
 	for i := 0; i < NUM_REGS; i++ {
 		tm.registers[i] = 0
@@ -196,7 +200,7 @@ func (tm *TinyMachine) stepProgram() {
 
 		instruction := tm.instruction_memory[pc]
 		if tm.trace {
-			fmt.Println("Executing:", instruction)
+			tm.speak("Executing:", instruction)
 		}
 
 		r := instruction.iargs[0]
@@ -212,7 +216,7 @@ func (tm *TinyMachine) stepProgram() {
 			n := tm.readNumber(m, 0)
 			tm.registers[r] = n
 		case "OUT":
-			fmt.Println(tm.registers[r])
+			tm.speak(tm.registers[r])
 		case "ADD":
 			tm.registers[r] = tm.registers[s] + tm.registers[t]
 		case "SUB":
@@ -280,13 +284,13 @@ func (tm *TinyMachine) handleCpuState() {
 	case cpuOK:
 		break
 	case cpuDIV_ZERO:
-		fmt.Println("Divide by zero error. Program halted.")
+		tm.speak("Divide by zero error. Program halted.")
 	case cpuIMEM_ERR:
-		fmt.Println("Instruction memory access violation. Program halted.")
+		tm.speak("Instruction memory access violation. Program halted.")
 	case cpuDMEM_ERR:
-		fmt.Println("Data memory access violation. Program halted.")
+		tm.speak("Data memory access violation. Program halted.")
 	case cpuHALTED:
-		fmt.Println("Program halted.")
+		tm.speak("Program halted.")
 	}
 }
 
@@ -310,12 +314,12 @@ func (tm *TinyMachine) loadProgram(progfilename string) bool {
 	programfile, err := os.Open(progfilename)
 
 	if err != nil {
-		fmt.Println("Error:", err)
+		tm.speak("Error:", err)
 		return false
 	} else {
 		defer programfile.Close()
 		reader := bufio.NewReader(programfile)
-		fmt.Println("Reading program from", progfilename)
+		tm.speak("Reading program from", progfilename)
 
 		for {
 			line, err := reader.ReadString('\n')
@@ -323,7 +327,7 @@ func (tm *TinyMachine) loadProgram(progfilename string) bool {
 				if err == io.EOF {
 					break
 				} else {
-					fmt.Println("Error reading program:", err)
+					tm.speak("Error reading program:", err)
 					return false
 				}
 			} else {
@@ -336,8 +340,8 @@ func (tm *TinyMachine) loadProgram(progfilename string) bool {
 					instruction, err := parseInstruction(line[:len(line)-1])
 
 					if err != nil {
-						fmt.Println(err)
-						fmt.Printf("Error parsing program at line %d: %s\n", linenum, line)
+						tm.speak(err)
+						tm.speak(fmt.Sprintf("Error parsing program at line %d: %s\n", linenum, line))
 						return false
 					} else {
 						tm.instruction_memory[i], i = instruction, i+1
@@ -351,23 +355,23 @@ func (tm *TinyMachine) loadProgram(progfilename string) bool {
 }
 
 func (tm *TinyMachine) dumpRegisters() {
-	fmt.Println("Current Tiny Machine register values:")
+	tm.speak("Current Tiny Machine register values:")
 
 	for i := 0; i < NUM_REGS; i++ {
 		switch i {
 		case PC_REG:
-			fmt.Println("PC:", tm.registers[i])
+			tm.speak("PC:", tm.registers[i])
 		default:
-			fmt.Printf("%2d: %d\n", i, tm.registers[i])
+			tm.speak(fmt.Sprintf("%2d: %d\n", i, tm.registers[i]))
 		}
 	}
 }
 
 func (tm *TinyMachine) dumpMemory(start_addr, end_addr int) {
-	fmt.Println("Dumping data memory from address %d to %d", start_addr, end_addr)
+	tm.speak("Dumping data memory from address %d to %d", start_addr, end_addr)
 
 	for i := start_addr; i <= end_addr; i++ {
-		fmt.Printf("%04d: %d\n", i, tm.data_memory[i])
+		tm.speak(fmt.Sprintf("%04d: %d\n", i, tm.data_memory[i]))
 	}
 }
 
@@ -384,12 +388,12 @@ func (tm *TinyMachine) readNumber(prompt string, def int) int {
 		fmt.Printf("%s: ", prompt)
 		input, err := tm.stdin.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error reading input. Returning default", def)
+			tm.speak("Error reading input. Returning default", def)
 			break
 		} else {
 			num, err := strconv.Atoi(input[:len(input)-1])
 			if err != nil {
-				fmt.Println("Error converting input. Returning default", def)
+				tm.speak("Error converting input. Returning default", def)
 				break
 			} else {
 				return num
@@ -416,7 +420,7 @@ func (tm *TinyMachine) Interact() {
 		{"t", "toggle execution tracing"},
 	}
 
-	fmt.Println("Tiny Machine simulation (enter h for help)")
+	tm.speak("Tiny Machine simulation (enter h for help)")
 interactive:
 	for {
 		fmt.Printf("Enter command: ")
@@ -425,7 +429,7 @@ interactive:
 			if err == io.EOF {
 				// Fake up a real "q" entry so we handle eof the same way as a normal
 				// exit.
-				fmt.Println()
+				tm.speak()
 				input = "q\n"
 			} else {
 				// This will be handled with the unknown case below.
@@ -448,11 +452,11 @@ interactive:
 			start_addr := tm.readNumber("Starting Address", 0)
 			end_addr := tm.readNumber("Ending Address", MEM_SIZE-1)
 			if start_addr > end_addr || start_addr < 0 {
-				fmt.Println("Invalid memory region.")
+				tm.speak("Invalid memory region.")
 			}
 
 			if end_addr >= MEM_SIZE {
-				fmt.Println("Invalid memory region.")
+				tm.speak("Invalid memory region.")
 			} else {
 				tm.dumpMemory(start_addr, end_addr)
 			}
@@ -460,16 +464,16 @@ interactive:
 			start_addr := tm.readNumber("Starting Address", 0)
 			end_addr := tm.readNumber("Ending Address", MEM_SIZE-1)
 			if start_addr > end_addr || start_addr < 0 {
-				fmt.Println("Invalid memory region.")
+				tm.speak("Invalid memory region.")
 			}
 
 			if end_addr >= MEM_SIZE {
-				fmt.Println("Invalid memory region.")
+				tm.speak("Invalid memory region.")
 			} else {
 				tm.dumpProgram(start_addr, end_addr)
 			}
 		case "q":
-			fmt.Println("Exiting.")
+			tm.speak("Exiting.")
 			break interactive
 		case "r":
 			tm.dumpRegisters()
@@ -477,9 +481,9 @@ interactive:
 			tm.stepProgram()
 		case "t":
 			tm.trace = !tm.trace
-			fmt.Println("Execution tracing is now", tm.trace)
+			tm.speak("Execution tracing is now", tm.trace)
 		default:
-			fmt.Println("Not implemented yet. Try 'h' for help.")
+			tm.speak("Not implemented yet. Try 'h' for help.")
 		}
 	}
 
@@ -489,12 +493,12 @@ func main() {
 	var tm TinyMachine
 
 	if len(os.Args) < 2 {
-		fmt.Println("You must supply a program as the first argument.")
+		tm.speak("You must supply a program as the first argument.")
 	} else {
 		if tm.loadProgram(os.Args[1]) {
 			tm.Interact()
 		} else {
-			fmt.Println("Error loading program from:", os.Args[1])
+			tm.speak("Error loading program from:", os.Args[1])
 		}
 	}
 }
