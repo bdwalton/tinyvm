@@ -51,6 +51,19 @@ type TinyMachine struct {
 	cpustate           TinyCPUState              // See cpu* constants above
 }
 
+func (ti TinyInstruction) String() string {
+	var s string
+
+	switch ti.ioptype {
+	case iopRO:
+		s = fmt.Sprintf("%s %d,%d,%d", ti.iop, ti.iargs[0], ti.iargs[1], ti.iargs[2])
+	default:
+		s = fmt.Sprintf("%s %d,%d(%d)", ti.iop, ti.iargs[0], ti.iargs[1], ti.iargs[2])
+	}
+
+	return s
+}
+
 // Operands are of the form r,s,t where r, s and t are all integers
 func parseROop(args string) ([]int, error) {
 	string_args := strings.Split(args, ",")
