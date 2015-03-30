@@ -15,11 +15,20 @@ const MEM_SIZE = 1024 // How much data memory? (Used to size both data and progr
 const NUM_REGS = 8    // The total number of registers available.
 const PC_REG = 7      // The registered used as the program counter.
 
+type TinyInstructionType int
+
+const (
+	iopRO TinyInstructionType = iota // Register-only
+	iopRM TinyInstructionType = iota // Register-memory
+	iopRA TinyInstructionType = iota // Register-address
+)
+
 // Instructions are composed of one operation and up to three
 // arguments.
 type TinyInstruction struct {
-	iop   string
-	iargs []int
+	iop     string
+	iargs   []int
+	ioptype TinyInstructionType
 }
 
 type TinyCPUState int
@@ -93,6 +102,7 @@ func parseInstruction(line string) (TinyInstruction, error) {
 	var args []int
 	var err error
 	var ti TinyInstruction
+	var ioptype TinyInstructionType
 
 	// Chop the newline off and then split on spaces
 	r := regexp.MustCompile(" +")
@@ -105,8 +115,13 @@ func parseInstruction(line string) (TinyInstruction, error) {
 		switch line_parts[0] {
 		case "HALT", "IN", "OUT", "ADD", "SUB", "MUL", "DIV":
 			args, err = parseROop(line_parts[1])
-		case "LD", "ST", "LDA", "LDC", "JLT", "JLE", "JGT", "JGE", "JEQ", "JNE":
+			ioptype = iopRO
+		case "LD", "ST":
+			ioptype = iopRM
 			args, err = parseRMop(line_parts[1])
+		case "LDA", "LDC", "JLT", "JLE", "JGT", "JGE", "JEQ", "JNE":
+			args, err = parseRMop(line_parts[1])
+			ioptype = iopRA
 		default:
 			return ti, errors.New("Invalid opcode: '" + line_parts[0] + "'")
 		}
@@ -117,6 +132,7 @@ func parseInstruction(line string) (TinyInstruction, error) {
 		} else {
 			ti.iop = line_parts[0]
 			ti.iargs = args
+			ti.ioptype = ioptype
 		}
 	}
 
@@ -134,7 +150,7 @@ func (tm *TinyMachine) initializeMachine(clearprogram bool) {
 
 	if clearprogram {
 		for i := 0; i < MEM_SIZE; i++ {
-			tm.instruction_memory[i] = TinyInstruction{"HALT", []int{0, 0, 0}}
+			tm.instruction_memory[i] = TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}
 		}
 	}
 
