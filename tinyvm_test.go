@@ -177,3 +177,36 @@ func TestInitializeMachine(t *testing.T) {
 		t.Errorf("Initializing machine didn't reset the program counter.")
 	}
 }
+
+func TestDIVInstruction(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+	// Stuff some values into the registers
+	tm.registers = [NUM_REGS]int{0, 1, 10, 2, 2, 10, 0, 0}
+
+	tm.instruction_memory[0] = TinyInstruction{"DIV", []int{2, 2, 3}} // 10 / 2 -> reg2
+	tm.instruction_memory[1] = TinyInstruction{"DIV", []int{4, 4, 5}} // 2 / 10 -> reg4
+	tm.instruction_memory[2] = TinyInstruction{"DIV", []int{0, 1, 0}} // 1 / 0  -> reg0
+
+	tm.stepProgram()
+	if tm.registers[2] != 5 {
+		t.Errorf("DIV 10/2 didn't work.")
+		if tm.cpustate != cpuOK {
+			t.Errorf("DIV 10/2 worked, but cpustate is invalid.")
+		}
+	}
+
+	tm.stepProgram()
+	if tm.registers[4] != 0 {
+		t.Errorf("DIV 2/10 didn't work.")
+		if tm.cpustate != cpuOK {
+			t.Errorf("DIV 2/10 worked, but cpustate is invalid.")
+		}
+	}
+
+	tm.stepProgram()
+	if tm.cpustate != cpuDIV_ZERO {
+		t.Errorf("DIV by 0 didn't set correct cpu state.")
+	}
+}
