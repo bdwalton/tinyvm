@@ -394,7 +394,19 @@ func (tm *TinyMachine) Interact() {
 interactive:
 	for {
 		fmt.Printf("Enter command: ")
-		input, _ := tm.stdin.ReadString('\n')
+		input, err := tm.stdin.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				// Fake up a real "q" entry so we handle eof the same way as a normal
+				// exit.
+				fmt.Println()
+				input = "q\n"
+			} else {
+				// This will be handled with the unknown case below.
+				input = "ijustmashedthekeyboard"
+			}
+		}
+
 		command := input[:len(input)-1]
 
 		switch command {
