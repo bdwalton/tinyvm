@@ -257,3 +257,47 @@ func TestADDInstruction(t *testing.T) {
 		}
 	}
 }
+func TestSUBInstruction(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+	// Stuff some values into the registers
+	tm.registers = [NUM_REGS]int{0, -1, 10, 2, 2, math.MinInt32, 5, 0}
+
+	tm.instruction_memory[0] = TinyInstruction{"SUB", []int{0, 2, 3}, iopRO} // 10 - 2  -> reg0
+	tm.instruction_memory[1] = TinyInstruction{"SUB", []int{0, 3, 6}, iopRO} // 2 - 5   -> reg0
+	tm.instruction_memory[2] = TinyInstruction{"SUB", []int{0, 1, 0}, iopRO} // -1 - -3  -> reg0
+	tm.instruction_memory[3] = TinyInstruction{"SUB", []int{0, 1, 5}, iopRO} // -1 - MIN -> reg0
+
+	tm.stepProgram()
+	if tm.registers[0] != 8 {
+		t.Errorf("SUB 10 + 2 didn't work. Got %d.", tm.registers[0])
+		if tm.cpustate != cpuOK {
+			t.Errorf("SUB 10 + 2 worked, but cpustate is invalid.")
+		}
+	}
+
+	tm.stepProgram()
+	if tm.registers[0] != -3 {
+		t.Errorf("SUB 2 - 5 didn't work. Got %d.", tm.registers[0])
+		if tm.cpustate != cpuOK {
+			t.Errorf("SUB 2 - 5 worked, but cpustate is invalid.")
+		}
+	}
+
+	tm.stepProgram()
+	if tm.registers[0] != 2 {
+		t.Errorf("SUB  -1 - -3 didn't work. Got %d.", tm.registers[0])
+		if tm.cpustate != cpuOK {
+			t.Errorf("SUB -1 - -3 worked, but cpustate is invalid.")
+		}
+	}
+
+	tm.stepProgram()
+	if tm.registers[0] != 2147483647 {
+		t.Errorf("SUB -1 - MININT didn't work. Got %d.", tm.registers[0])
+		if tm.cpustate != cpuOK {
+			t.Errorf("SUB -1 - MININT worked, but cpustate is invalid.")
+		}
+	}
+}
