@@ -213,6 +213,41 @@ func TestDIVInstruction(t *testing.T) {
 	}
 }
 
+func TestMULInstruction(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+	// Stuff some values into the registers
+	tm.registers = [NUM_REGS]int{0, -1, 10, 2, 4, -5, -7, 0}
+
+	tm.instruction_memory[0] = TinyInstruction{"MUL", []int{2, 2, 3}, iopRO} // 10 * 2  -> reg2
+	tm.instruction_memory[1] = TinyInstruction{"MUL", []int{4, 4, 5}, iopRO} // 4 * -5  -> reg4
+	tm.instruction_memory[2] = TinyInstruction{"MUL", []int{0, 1, 0}, iopRO} // 0 * -1  -> reg0
+	tm.instruction_memory[3] = TinyInstruction{"MUL", []int{0, 5, 6}, iopRO} // -5 * -7 -> reg0
+
+	cases := []struct {
+		expected_reg int
+		expected_val int
+		expected_cpu TinyCPUState
+	}{
+		{2, 20, cpuOK},
+		{4, -20, cpuOK},
+		{0, 0, cpuOK},
+		{0, 35, cpuOK},
+	}
+	for _, c := range cases {
+		tm.stepProgram()
+		if tm.registers[c.expected_reg] != c.expected_val {
+			t.Errorf("MUL instruction didn't work. Expected %d in reg[%d]. Got %d.",
+				c.expected_val, c.expected_reg, tm.registers[c.expected_reg])
+		}
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("MUL instruction fine, but cpuState invalid. Wanted %d, got %d.",
+				c.expected_cpu, tm.cpustate)
+		}
+	}
+}
+
 func TestADDInstruction(t *testing.T) {
 	var tm TinyMachine
 
