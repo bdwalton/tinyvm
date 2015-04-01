@@ -388,3 +388,35 @@ func TestLDInstruction(t *testing.T) {
 		}
 	}
 }
+
+func TestSTInstruction(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+	// Stuff some values into the registers
+	tm.registers = [NUM_REGS]int{MEM_SIZE + 1, MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
+	tm.data_memory[MEM_SIZE-4] = 54321
+	tm.data_memory[MEM_SIZE-1] = 12345
+	tm.instruction_memory[0] = TinyInstruction{"ST", []int{0, 1, 2}, iopRO} // ST MEM_SIZE+1 -> 1
+	tm.instruction_memory[1] = TinyInstruction{"ST", []int{1, 2, 1}, iopRO} // Load 12345
+
+	cases := []struct {
+		expected_addr int
+		expected_aval int
+		expected_cpu  TinyCPUState
+	}{
+		{1, MEM_SIZE + 1, cpuOK},
+		{MEM_SIZE - 1, MEM_SIZE - 3, cpuOK},
+	}
+	for _, c := range cases {
+		tm.stepProgram()
+		if tm.data_memory[c.expected_addr] != c.expected_aval {
+			t.Errorf("ST instruction didn't work. Expected %d in addr[%d]. Got %d.",
+				c.expected_aval, c.expected_addr, tm.data_memory[c.expected_addr])
+		}
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("LD instruction fine, but cpuState invalid. Wanted %d, got %d.",
+				c.expected_cpu, tm.cpustate)
+		}
+	}
+}
