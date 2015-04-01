@@ -191,25 +191,25 @@ func TestDIVInstruction(t *testing.T) {
 	tm.instruction_memory[1] = TinyInstruction{"DIV", []int{4, 4, 5}, iopRO} // 2 / 10 -> reg4
 	tm.instruction_memory[2] = TinyInstruction{"DIV", []int{0, 1, 0}, iopRO} // 1 / 0  -> reg0
 
-	tm.stepProgram()
-	if tm.registers[2] != 5 {
-		t.Errorf("DIV 10/2 didn't work.")
-		if tm.cpustate != cpuOK {
-			t.Errorf("DIV 10/2 worked, but cpustate is invalid.")
-		}
+	cases := []struct {
+		expected_reg int
+		expected_val int
+		expected_cpu TinyCPUState
+	}{
+		{2, 5, cpuOK},
+		{4, 0, cpuOK},
+		{0, 0, cpuDIV_ZERO},
 	}
-
-	tm.stepProgram()
-	if tm.registers[4] != 0 {
-		t.Errorf("DIV 2/10 didn't work.")
-		if tm.cpustate != cpuOK {
-			t.Errorf("DIV 2/10 worked, but cpustate is invalid.")
+	for _, c := range cases {
+		tm.stepProgram()
+		if tm.registers[c.expected_reg] != c.expected_val {
+			t.Errorf("DIV instruction didn't work. Expected %d in reg[%d]. Got %d.",
+				c.expected_val, c.expected_reg, tm.registers[c.expected_reg])
 		}
-	}
-
-	tm.stepProgram()
-	if tm.cpustate != cpuDIV_ZERO {
-		t.Errorf("DIV by 0 didn't set correct cpu state.")
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("DIV instruction fine, but cpuState invalid. Wanted %d, got %d.",
+				c.expected_cpu, tm.cpustate)
+		}
 	}
 }
 
@@ -225,38 +225,29 @@ func TestADDInstruction(t *testing.T) {
 	tm.instruction_memory[2] = TinyInstruction{"ADD", []int{0, 1, 0}, iopRO} // 1 + 7   -> reg0
 	tm.instruction_memory[3] = TinyInstruction{"ADD", []int{0, 1, 5}, iopRO} // 1 + MAX -> reg0
 
-	tm.stepProgram()
-	if tm.registers[0] != 12 {
-		t.Errorf("ADD 10 + 2 didn't work. Got %d.", tm.registers[0])
-		if tm.cpustate != cpuOK {
-			t.Errorf("ADD 10 + 2 worked, but cpustate is invalid.")
-		}
+	cases := []struct {
+		expected_reg int
+		expected_val int
+		expected_cpu TinyCPUState
+	}{
+		{0, 12, cpuOK},
+		{0, 7, cpuOK},
+		{0, 8, cpuOK},
+		{0, -2147483648, cpuOK},
 	}
-
-	tm.stepProgram()
-	if tm.registers[0] != 7 {
-		t.Errorf("ADD 2 + 5 didn't work. Got %d.", tm.registers[0])
-		if tm.cpustate != cpuOK {
-			t.Errorf("ADD 2 + 5 worked, but cpustate is invalid.")
+	for _, c := range cases {
+		tm.stepProgram()
+		if tm.registers[c.expected_reg] != c.expected_val {
+			t.Errorf("ADD instruction didn't work. Expected %d in reg[%d]. Got %d.",
+				c.expected_val, c.expected_reg, tm.registers[c.expected_reg])
 		}
-	}
-
-	tm.stepProgram()
-	if tm.registers[0] != 8 {
-		t.Errorf("ADD 1 + 7 didn't work. Got %d.", tm.registers[0])
-		if tm.cpustate != cpuOK {
-			t.Errorf("ADD 1 + 7 worked, but cpustate is invalid.")
-		}
-	}
-
-	tm.stepProgram()
-	if tm.registers[0] != -2147483648 {
-		t.Errorf("ADD 1 + MAXINT didn't work. Got %d.", tm.registers[0])
-		if tm.cpustate != cpuOK {
-			t.Errorf("ADD 1 + MAXINT worked, but cpustate is invalid.")
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("ADD instruction fine, but cpuState invalid. Wanted %d, got %d.",
+				c.expected_cpu, tm.cpustate)
 		}
 	}
 }
+
 func TestSUBInstruction(t *testing.T) {
 	var tm TinyMachine
 
@@ -269,35 +260,25 @@ func TestSUBInstruction(t *testing.T) {
 	tm.instruction_memory[2] = TinyInstruction{"SUB", []int{0, 1, 0}, iopRO} // -1 - -3  -> reg0
 	tm.instruction_memory[3] = TinyInstruction{"SUB", []int{0, 1, 5}, iopRO} // -1 - MIN -> reg0
 
-	tm.stepProgram()
-	if tm.registers[0] != 8 {
-		t.Errorf("SUB 10 + 2 didn't work. Got %d.", tm.registers[0])
-		if tm.cpustate != cpuOK {
-			t.Errorf("SUB 10 + 2 worked, but cpustate is invalid.")
-		}
+	cases := []struct {
+		expected_reg int
+		expected_val int
+		expected_cpu TinyCPUState
+	}{
+		{0, 8, cpuOK},
+		{0, -3, cpuOK},
+		{0, 2, cpuOK},
+		{0, 2147483647, cpuOK},
 	}
-
-	tm.stepProgram()
-	if tm.registers[0] != -3 {
-		t.Errorf("SUB 2 - 5 didn't work. Got %d.", tm.registers[0])
-		if tm.cpustate != cpuOK {
-			t.Errorf("SUB 2 - 5 worked, but cpustate is invalid.")
+	for _, c := range cases {
+		tm.stepProgram()
+		if tm.registers[c.expected_reg] != c.expected_val {
+			t.Errorf("SUB instruction didn't work. Expected %d in reg[%d]. Got %d.",
+				c.expected_val, c.expected_reg, tm.registers[c.expected_reg])
 		}
-	}
-
-	tm.stepProgram()
-	if tm.registers[0] != 2 {
-		t.Errorf("SUB  -1 - -3 didn't work. Got %d.", tm.registers[0])
-		if tm.cpustate != cpuOK {
-			t.Errorf("SUB -1 - -3 worked, but cpustate is invalid.")
-		}
-	}
-
-	tm.stepProgram()
-	if tm.registers[0] != 2147483647 {
-		t.Errorf("SUB -1 - MININT didn't work. Got %d.", tm.registers[0])
-		if tm.cpustate != cpuOK {
-			t.Errorf("SUB -1 - MININT worked, but cpustate is invalid.")
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("SUB instruction fine, but cpuState invalid. Wanted %d, got %d.",
+				c.expected_cpu, tm.cpustate)
 		}
 	}
 }
