@@ -180,6 +180,44 @@ func TestInitializeMachine(t *testing.T) {
 	}
 }
 
+func TestHALTInstruction(t *testing.T) {
+	var tm TinyMachine
+
+	cases := []struct {
+		expected_pc  int
+		expected_cpu TinyCPUState
+	}{
+		{1, cpuOK},
+		{2, cpuOK},
+		{3, cpuHALTED},
+		// Verify that running the machine when halted doesn't advance PC,
+		// change state
+		{3, cpuHALTED},
+	}
+
+	tm.initializeMachine(true)
+	// Stuff some values into the registers
+	tm.registers = [NUM_REGS]int{0, -1, 10, 2, 2, math.MinInt32, 5, 0}
+
+	tm.instruction_memory[0] = TinyInstruction{"SUB", []int{0, 2, 3}, iopRO}
+	tm.instruction_memory[1] = TinyInstruction{"SUB", []int{0, 3, 6}, iopRO}
+	// Not necessary, but include for completeness. Machine is initialized with
+	// HALT instructions.
+	tm.instruction_memory[2] = TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}
+
+	for _, c := range cases {
+		tm.stepProgram()
+		if tm.registers[PC_REG] != c.expected_pc {
+			t.Errorf("PC invalid. Expected %d, got %d",
+				c.expected_pc, tm.registers[PC_REG])
+		}
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("PC register moved, but cpuState invalid. Wanted %d, got %d.",
+				c.expected_cpu, tm.cpustate)
+		}
+	}
+}
+
 func TestDIVInstruction(t *testing.T) {
 	var tm TinyMachine
 
