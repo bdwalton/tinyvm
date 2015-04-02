@@ -56,9 +56,9 @@ func (ti TinyInstruction) String() string {
 
 	switch ti.ioptype {
 	case iopRO:
-		s = fmt.Sprintf("%s %d,%d,%d", ti.iop, ti.iargs[0], ti.iargs[1], ti.iargs[2])
+		s = fmt.Sprintf("%-4s %d,%d,%d", ti.iop, ti.iargs[0], ti.iargs[1], ti.iargs[2])
 	default:
-		s = fmt.Sprintf("%s %d,%d(%d)", ti.iop, ti.iargs[0], ti.iargs[1], ti.iargs[2])
+		s = fmt.Sprintf("%-4s %d,%d(%d)", ti.iop, ti.iargs[0], ti.iargs[1], ti.iargs[2])
 	}
 
 	return s
