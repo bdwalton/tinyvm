@@ -364,9 +364,9 @@ func TestLDInstruction(t *testing.T) {
 	tm.registers = [NUM_REGS]int{0, MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
 	tm.data_memory[MEM_SIZE-4] = 54321
 	tm.data_memory[MEM_SIZE-1] = 12345
-	tm.instruction_memory[0] = TinyInstruction{"LD", []int{0, 0, 0}, iopRO}  // Load MEM_SIZE
-	tm.instruction_memory[1] = TinyInstruction{"LD", []int{0, 2, 1}, iopRO}  // Load 12345
-	tm.instruction_memory[2] = TinyInstruction{"LD", []int{0, -1, 1}, iopRO} // Load 54321
+	tm.instruction_memory[0] = TinyInstruction{"LD", []int{0, 0, 0}, iopRM}  // Load MEM_SIZE
+	tm.instruction_memory[1] = TinyInstruction{"LD", []int{0, 2, 1}, iopRM}  // Load 12345
+	tm.instruction_memory[2] = TinyInstruction{"LD", []int{0, -1, 1}, iopRM} // Load 54321
 
 	cases := []struct {
 		expected_reg int
@@ -397,8 +397,8 @@ func TestSTInstruction(t *testing.T) {
 	tm.registers = [NUM_REGS]int{MEM_SIZE + 1, MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
 	tm.data_memory[MEM_SIZE-4] = 54321
 	tm.data_memory[MEM_SIZE-1] = 12345
-	tm.instruction_memory[0] = TinyInstruction{"ST", []int{0, 1, 2}, iopRO} // ST MEM_SIZE+1 -> 1
-	tm.instruction_memory[1] = TinyInstruction{"ST", []int{1, 2, 1}, iopRO} // Load 12345
+	tm.instruction_memory[0] = TinyInstruction{"ST", []int{0, 1, 2}, iopRM} // ST MEM_SIZE+1 -> 1
+	tm.instruction_memory[1] = TinyInstruction{"ST", []int{1, 2, 1}, iopRM} // Load 12345
 
 	cases := []struct {
 		expected_addr int
