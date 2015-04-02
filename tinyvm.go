@@ -230,11 +230,7 @@ func (tm *TinyMachine) stepProgram() {
 				tm.registers[r] = tm.registers[s] / tm.registers[t]
 			}
 		case "LDA":
-			if a < 0 || a > MEM_SIZE {
-				tm.cpustate = cpuDMEM_ERR
-			} else {
-				tm.registers[r] = a
-			}
+			tm.registers[r] = a
 		case "LDC":
 			tm.registers[r] = s
 		case "LD":
