@@ -341,7 +341,7 @@ func (tm *TinyMachine) loadProgram(progfilename string) bool {
 
 					if err != nil {
 						tm.speak(err)
-						tm.speak(fmt.Sprintf("Error parsing program at line %d: %s\n", linenum, line))
+						tm.speak(fmt.Sprintf("Error parsing program at line %d: %s", linenum, line))
 						return false
 					} else {
 						tm.instruction_memory[i], i = instruction, i+1
@@ -362,7 +362,7 @@ func (tm *TinyMachine) dumpRegisters() {
 		case PC_REG:
 			tm.speak("PC:", tm.registers[i])
 		default:
-			tm.speak(fmt.Sprintf("%2d: %d\n", i, tm.registers[i]))
+			tm.speak(fmt.Sprintf("%2d: %d", i, tm.registers[i]))
 		}
 	}
 }
@@ -371,7 +371,7 @@ func (tm *TinyMachine) dumpMemory(start_addr, end_addr int) {
 	tm.speak("Dumping data memory from address %d to %d", start_addr, end_addr)
 
 	for i := start_addr; i <= end_addr; i++ {
-		tm.speak(fmt.Sprintf("%04d: %d\n", i, tm.data_memory[i]))
+		tm.speak(fmt.Sprintf("%04d: %d", i, tm.data_memory[i]))
 	}
 }
 
