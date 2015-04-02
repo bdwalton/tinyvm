@@ -451,3 +451,36 @@ func TestLDCInstruction(t *testing.T) {
 		}
 	}
 }
+
+func TestLDAInstruction(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+	// Stuff some values into the registers
+	tm.registers = [NUM_REGS]int{0, 0, 0, 0, 0, 0, 0, 0}
+
+	tm.instruction_memory[0] = TinyInstruction{"LDA", []int{0, 100, 0}, iopRA} // 100 -> reg0
+	tm.instruction_memory[1] = TinyInstruction{"LDA", []int{3, -2, 0}, iopRA}  // 98 -> reg3
+	tm.instruction_memory[2] = TinyInstruction{"LDA", []int{4, 5, 3}, iopRA}   // 103 -> reg4
+
+	cases := []struct {
+		expected_reg int
+		expected_val int
+		expected_cpu TinyCPUState
+	}{
+		{0, 100, cpuOK},
+		{3, 98, cpuOK},
+		{4, 103, cpuOK},
+	}
+	for _, c := range cases {
+		tm.stepProgram()
+		if tm.registers[c.expected_reg] != c.expected_val {
+			t.Errorf("LDA instruction didn't work. Expected %d in reg[%d]. Got %d.",
+				c.expected_val, c.expected_reg, tm.registers[c.expected_reg])
+		}
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("LDA instruction fine, but cpuState invalid. Wanted %d, got %d.",
+				c.expected_cpu, tm.cpustate)
+		}
+	}
+}
