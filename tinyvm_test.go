@@ -716,3 +716,27 @@ func TestDMEM_ERR_State(t *testing.T) {
 		tm.resetState() // Reset so the next test instruction has a clean start
 	}
 }
+
+func TestIMEM_ERR_State(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+
+	cases := []int{
+		-1,
+		MEM_SIZE,
+	}
+	for i, pc := range cases {
+		// Stuff some values into the registers
+		tm.registers = [NUM_REGS]int{0, 0, 0, 0, 0, 0, 0, pc}
+
+		tm.stepProgram()
+
+		if tm.cpustate != cpuIMEM_ERR {
+			t.Errorf("%d: Expected cpu state to be %d. Got %d.",
+				i, cpuIMEM_ERR, tm.cpustate)
+		}
+
+		tm.resetState() // Reset so the next test instruction has a clean start
+	}
+}
