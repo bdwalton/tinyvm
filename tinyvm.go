@@ -238,13 +238,13 @@ func (tm *TinyMachine) stepProgram() {
 		case "LDC":
 			tm.registers[r] = s
 		case "LD":
-			if a < 0 || a > MEM_SIZE {
+			if a < 0 || a >= MEM_SIZE {
 				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.registers[r] = tm.data_memory[a]
 			}
 		case "ST":
-			if a < 0 || a > MEM_SIZE {
+			if a < 0 || a >= MEM_SIZE {
 				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.data_memory[a] = tm.registers[r]
