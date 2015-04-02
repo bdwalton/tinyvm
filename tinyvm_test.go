@@ -682,3 +682,37 @@ func TestJNEInstruction(t *testing.T) {
 		}
 	}
 }
+
+func TestDMEM_ERR_State(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+
+	cases := []struct {
+		given_inst   TinyInstruction // The instruction to execute
+		expected_pc  int             // Expected PC value
+		expected_cpu TinyCPUState    // Expected CPU state
+	}{
+		{TinyInstruction{"LD", []int{0, MEM_SIZE, 1}, iopRM}, 1, cpuDMEM_ERR},
+		{TinyInstruction{"LD", []int{0, -1, 1}, iopRM}, 1, cpuDMEM_ERR},
+		{TinyInstruction{"ST", []int{0, 0, 0}, iopRM}, 1, cpuDMEM_ERR},
+		{TinyInstruction{"ST", []int{0, -1, 1}, iopRM}, 1, cpuDMEM_ERR},
+	}
+	for i, c := range cases {
+		// Stuff some values into the registers
+		tm.registers = [NUM_REGS]int{MEM_SIZE, 0, 0, 0, 0, 0, 0, 0}
+		tm.instruction_memory[0] = c.given_inst // Load the instruction that should be a memory violation
+
+		tm.stepProgram()
+
+		if tm.registers[PC_REG] != c.expected_pc {
+			t.Errorf("%d: Expected PC to be %d. Got %d.",
+				i, c.expected_pc, tm.registers[PC_REG])
+		}
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("%d: Instruction didn't trigger DMEM_ERR. %d, got %d.",
+				i, c.expected_cpu, tm.cpustate)
+		}
+		tm.resetState() // Reset so the next test instruction has a clean start
+	}
+}
