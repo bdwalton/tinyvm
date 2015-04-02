@@ -484,3 +484,36 @@ func TestLDAInstruction(t *testing.T) {
 		}
 	}
 }
+
+func TestJLTInstruction(t *testing.T) {
+	var tm TinyMachine
+
+	tm.initializeMachine(true)
+	// Stuff some values into the registers
+	tm.registers = [NUM_REGS]int{-1, -2, 0, 0, 0, 0, 0, 0}
+
+	tm.instruction_memory[0] = TinyInstruction{"JLT", []int{0, 100, 2}, iopRA} // pcreg -> 100
+	tm.instruction_memory[2] = TinyInstruction{"JLT", []int{4, 5, 3}, iopRA}   // !(pcreg -> 0)
+	tm.instruction_memory[100] = TinyInstruction{"JLT", []int{1, 3, 0}, iopRA} // pcreg -> 2
+
+	cases := []struct {
+		expected_pc  int          // Expected PC value
+		expected_cpu TinyCPUState // Expected CPU state
+	}{
+		{100, cpuOK},
+		{2, cpuOK},
+		{3, cpuOK},
+		{4, cpuHALTED},
+	}
+	for _, c := range cases {
+		tm.stepProgram()
+		if tm.registers[PC_REG] != c.expected_pc {
+			t.Errorf("JLT instruction didn't work. Expected PC to be %d. Got %d.",
+				c.expected_pc, tm.registers[PC_REG])
+		}
+		if tm.cpustate != c.expected_cpu {
+			t.Errorf("JLT instruction fine, but cpuState invalid. Wanted %d, got %d.",
+				c.expected_cpu, tm.cpustate)
+		}
+	}
+}
