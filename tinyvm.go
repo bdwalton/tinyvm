@@ -82,7 +82,12 @@ func parseROop(args string) ([]int, error) {
 			if err != nil {
 				return nil, errors.New("Invalid arguments: " + args)
 			} else {
-				converted_args[i] = num
+				// Ensure that all operands are valid registers
+				if num < 0 || num >= NUM_REGS {
+					return nil, errors.New("Invalid arguments. Bad register: " + string_args[i])
+				} else {
+					converted_args[i] = num
+				}
 			}
 		}
 	}
@@ -104,11 +109,18 @@ func parseRMop(args string) ([]int, error) {
 		indexes := [][]int{[]int{0, x}, []int{x + 1, y}, []int{y + 1, z}}
 
 		for i, bounds := range indexes {
-			num, err := strconv.Atoi(args[bounds[0]:bounds[1]])
+			str_num := args[bounds[0]:bounds[1]]
+			num, err := strconv.Atoi(str_num)
+
 			if err != nil {
 				return nil, errors.New("Invalid arguments: " + args)
 			} else {
-				converted_args[i] = num
+				// Ensure that the 1st and 3rd operands are valid registers
+				if (i == 0 || i == 2) && (num < 0 || num >= NUM_REGS) {
+					return nil, errors.New("Invalid arguments. Bad register: " + str_num)
+				} else {
+					converted_args[i] = num
+				}
 			}
 		}
 	}
