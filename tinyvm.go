@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -11,9 +12,13 @@ import (
 	"strings"
 )
 
-const MEM_SIZE = 1024 // How much data memory? (Used to size both data and program memory.)
-const NUM_REGS = 8    // The total number of registers available.
-const PC_REG = 7      // The registered used as the program counter.
+// If --mem_size isn't passed, the default size of data and instruction memory.
+const DEF_MEM_SIZE = 1024
+const NUM_REGS = 8 // The total number of registers available.
+const PC_REG = 7   // The registered used as the program counter.
+
+var mem_size = flag.Int("mem_size", DEF_MEM_SIZE,
+	"This size of program and data memory.")
 
 type TinyInstructionType int
 
@@ -43,12 +48,12 @@ const (
 
 /* A structure representing a tiny machine */
 type TinyMachine struct {
-	stdin              *bufio.Reader             // To handle data input
-	registers          [NUM_REGS]int             // 8 registers
-	data_memory        [MEM_SIZE]int             // Data memory
-	instruction_memory [MEM_SIZE]TinyInstruction // Instruction memory
-	trace              bool                      // Output instructions as they're executed
-	cpustate           TinyCPUState              // See cpu* constants above
+	stdin              *bufio.Reader     // To handle data input
+	registers          [NUM_REGS]int     // 8 registers
+	data_memory        []int             // Data memory
+	instruction_memory []TinyInstruction // Instruction memory
+	trace              bool              // Output instructions as they're executed
+	cpustate           TinyCPUState      // See cpu* constants above
 }
 
 func (ti TinyInstruction) String() string {
@@ -157,22 +162,25 @@ func (tm *TinyMachine) speak(saywhat ...interface{}) {
 }
 
 func (tm *TinyMachine) initializeMachine(clearprogram bool) {
+	tm.data_memory = make([]int, *mem_size)
+
 	for i := 0; i < NUM_REGS; i++ {
 		tm.registers[i] = 0
 	}
 
-	for i := 0; i < MEM_SIZE; i++ {
+	for i := 0; i < *mem_size; i++ {
 		tm.data_memory[i] = 0
 	}
 
 	if clearprogram {
-		for i := 0; i < MEM_SIZE; i++ {
+		tm.instruction_memory = make([]TinyInstruction, *mem_size)
+		for i := 0; i < *mem_size; i++ {
 			tm.instruction_memory[i] = TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}
 		}
 	}
 
 	// Store the size of the memory in the first memory element.
-	tm.data_memory[0] = MEM_SIZE - 1
+	tm.data_memory[0] = *mem_size - 1
 	tm.cpustate = cpuOK
 	tm.registers[PC_REG] = 0
 	tm.stdin = bufio.NewReader(os.Stdin) // An io helper.
@@ -192,7 +200,7 @@ func (tm *TinyMachine) stepProgram() {
 	}
 
 	pc := tm.registers[PC_REG]
-	if pc < 0 || pc > MEM_SIZE-1 {
+	if pc < 0 || pc > *mem_size-1 {
 		tm.cpustate = cpuIMEM_ERR
 	} else {
 		// Step the program counter
@@ -234,13 +242,13 @@ func (tm *TinyMachine) stepProgram() {
 		case "LDC":
 			tm.registers[r] = s
 		case "LD":
-			if a < 0 || a >= MEM_SIZE {
+			if a < 0 || a >= *mem_size {
 				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.registers[r] = tm.data_memory[a]
 			}
 		case "ST":
-			if a < 0 || a >= MEM_SIZE {
+			if a < 0 || a >= *mem_size {
 				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.data_memory[a] = tm.registers[r]
@@ -446,24 +454,24 @@ interactive:
 			}
 		case "d":
 			start_addr := tm.readNumber("Starting Address", 0)
-			end_addr := tm.readNumber("Ending Address", MEM_SIZE-1)
+			end_addr := tm.readNumber("Ending Address", *mem_size-1)
 			if start_addr > end_addr || start_addr < 0 {
 				tm.speak("Invalid memory region.")
 			}
 
-			if end_addr >= MEM_SIZE {
+			if end_addr >= *mem_size {
 				tm.speak("Invalid memory region.")
 			} else {
 				tm.dumpMemory(start_addr, end_addr)
 			}
 		case "i":
 			start_addr := tm.readNumber("Starting Address", 0)
-			end_addr := tm.readNumber("Ending Address", MEM_SIZE-1)
+			end_addr := tm.readNumber("Ending Address", *mem_size-1)
 			if start_addr > end_addr || start_addr < 0 {
 				tm.speak("Invalid memory region.")
 			}
 
-			if end_addr >= MEM_SIZE {
+			if end_addr >= *mem_size {
 				tm.speak("Invalid memory region.")
 			} else {
 				tm.dumpProgram(start_addr, end_addr)
@@ -488,13 +496,15 @@ interactive:
 func main() {
 	var tm TinyMachine
 
-	if len(os.Args) < 2 {
+	flag.Parse()
+
+	if len(flag.Args()) < 1 {
 		tm.speak("You must supply a program as the first argument.")
 	} else {
-		if tm.loadProgram(os.Args[1]) {
+		if tm.loadProgram(flag.Args()[0]) {
 			tm.Interact()
 		} else {
-			tm.speak("Error loading program from:", os.Args[1])
+			tm.speak("Error loading program from:", flag.Args()[0])
 		}
 	}
 }
