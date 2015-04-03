@@ -329,12 +329,13 @@ func (tm *TinyMachine) loadProgram(progname string, fh io.Reader) bool {
 			}
 		} else {
 			linenum++
-			if strings.Index(line, "*") == 0 {
-				// Comments are lines starting with an asterisk
-				continue
+			chomped_line := line[:len(line)-1] // Strip the
+			r := regexp.MustCompile("[[:alnum:]]")
+			has_content := r.MatchString(chomped_line)
+
+			if !has_content || strings.Index(chomped_line, "*") == 0 {
+				continue // Comments blank and comment lines
 			} else {
-				chomped_line := line[:len(line)-1] // Strip the newline
-				// TODO(bdwalton): Skip over blank lines.
 				instruction, err := parseInstruction(chomped_line)
 
 				if err != nil {
