@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"math"
 	"reflect"
 	"testing"
@@ -154,6 +156,51 @@ func TestResetState(t *testing.T) {
 		t.Errorf("Resetting machine didn't reset memory state.")
 	} else if tm.registers[PC_REG] != 0 {
 		t.Errorf("Initializing machine didn't reset the program counter.")
+	}
+}
+
+func TestLoadProgram(t *testing.T) {
+	var tm TinyMachine
+
+	cases := []struct {
+		prog     string
+		valid    bool
+		imem_pos []int
+		ti       []TinyInstruction
+	}{
+		// Comment lines ignored
+		{"LDC 1,1(0)\n* This is a comment\nADD 1,1,1\n",
+			true, []int{0, 1}, []TinyInstruction{{"LDC", []int{1, 1, 0}, iopRA},
+				{"ADD", []int{1, 1, 1}, iopRO}}},
+		{"ST 1,1(0)\nSUB 1,1,1\n",
+			true, []int{1}, []TinyInstruction{{"SUB", []int{1, 1, 1}, iopRO}}},
+		// Blank lines ignored.
+		{"ST 1,1(0)\n\nSUB 1,1,1\n",
+			true, []int{1}, []TinyInstruction{{"SUB", []int{1, 1, 1}, iopRO}}},
+		// Invalid instruction
+		{"STORE 1,1(0)\nSUB 1,1,1\n",
+			false, []int{}, []TinyInstruction{}},
+		// Empty program
+		{"",
+			true, []int{0}, []TinyInstruction{{"HALT", []int{0, 0, 0}, iopRO}}},
+	}
+
+	for i, c := range cases {
+		program := bytes.NewBufferString(c.prog)
+		ok := tm.loadProgram(fmt.Sprintf("test-%d", i), program)
+
+		if ok != c.valid {
+			t.Errorf("%d: Expected %t load, but didn't get it.", i, c.valid)
+		} else if ok {
+			// Only test the loaded instructions if the program is valid
+			for x, v := range c.imem_pos {
+				inst := tm.instruction_memory[v]
+				expected := c.ti[x]
+				if !reflect.DeepEqual(expected, inst) {
+					t.Errorf("Expected instruction '%s' in location %d. Got '%s'.", expected, x, inst)
+				}
+			}
+		}
 	}
 }
 
