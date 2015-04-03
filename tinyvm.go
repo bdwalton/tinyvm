@@ -307,7 +307,7 @@ func (tm *TinyMachine) runProgram() {
 	}
 }
 
-func (tm *TinyMachine) loadProgram(progfilename string) bool {
+func (tm *TinyMachine) loadProgram(progname string, fh io.Reader) bool {
 	var (
 		i       int
 		linenum int = 0
@@ -315,41 +315,33 @@ func (tm *TinyMachine) loadProgram(progfilename string) bool {
 
 	tm.initializeMachine(true)
 
-	programfile, err := os.Open(progfilename)
+	reader := bufio.NewReader(fh)
+	tm.speak("Reading program from", progname)
 
-	if err != nil {
-		tm.speak("Error:", err)
-		return false
-	} else {
-		defer programfile.Close()
-		reader := bufio.NewReader(programfile)
-		tm.speak("Reading program from", progfilename)
-
-		for {
-			line, err := reader.ReadString('\n')
-			if err != nil {
-				if err == io.EOF {
-					break
-				} else {
-					tm.speak("Error reading program:", err)
-					return false
-				}
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
 			} else {
-				linenum++
-				if strings.Index(line, "*") == 0 {
-					// Comments are lines starting with an asterisk
-					continue
-				} else {
-					// TODO(bdwalton): Skip over blank lines.
-					instruction, err := parseInstruction(line[:len(line)-1])
+				tm.speak("Error reading program:", err)
+				return false
+			}
+		} else {
+			linenum++
+			if strings.Index(line, "*") == 0 {
+				// Comments are lines starting with an asterisk
+				continue
+			} else {
+				// TODO(bdwalton): Skip over blank lines.
+				instruction, err := parseInstruction(line[:len(line)-1])
 
-					if err != nil {
-						tm.speak(err)
-						tm.speak(fmt.Sprintf("Error parsing program at line %d: %s", linenum, line))
-						return false
-					} else {
-						tm.instruction_memory[i], i = instruction, i+1
-					}
+				if err != nil {
+					tm.speak(err)
+					tm.speak(fmt.Sprintf("Error parsing program at line %d: %s", linenum, line))
+					return false
+				} else {
+					tm.instruction_memory[i], i = instruction, i+1
 				}
 			}
 		}
@@ -501,7 +493,14 @@ func main() {
 	if len(flag.Args()) < 1 {
 		tm.speak("You must supply a program as the first argument.")
 	} else {
-		if tm.loadProgram(flag.Args()[0]) {
+		programfile, err := os.Open(flag.Args()[0])
+		if err != nil {
+			fmt.Printf("Error reading from %s: %s\n", flag.Args()[0], err)
+			os.Exit(1)
+		}
+		defer programfile.Close()
+
+		if tm.loadProgram(flag.Args()[0], programfile) {
 			tm.Interact()
 		} else {
 			tm.speak("Error loading program from:", flag.Args()[0])
