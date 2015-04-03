@@ -333,12 +333,13 @@ func (tm *TinyMachine) loadProgram(progname string, fh io.Reader) bool {
 				// Comments are lines starting with an asterisk
 				continue
 			} else {
+				chomped_line := line[:len(line)-1] // Strip the newline
 				// TODO(bdwalton): Skip over blank lines.
-				instruction, err := parseInstruction(line[:len(line)-1])
+				instruction, err := parseInstruction(chomped_line)
 
 				if err != nil {
 					tm.speak(err)
-					tm.speak(fmt.Sprintf("Error parsing program at line %d: %s", linenum, line))
+					tm.speak(fmt.Sprintf("Error parsing program at line %d: %s", linenum, chomped_line))
 					return false
 				} else {
 					tm.instruction_memory[i], i = instruction, i+1
