@@ -131,11 +131,13 @@ func TestParseInstruction(t *testing.T) {
 func TestResetState(t *testing.T) {
 	var tm TinyMachine
 
+	tm.initializeMachine(true)
+
 	tm.cpustate = cpuHALTED
 	tm.instruction_memory[0] = TinyInstruction{"LDC", []int{1, 1, 1}, iopRA}
-	tm.instruction_memory[MEM_SIZE-1] = TinyInstruction{"ADD", []int{1, 1, 1}, iopRO}
+	tm.instruction_memory[DEF_MEM_SIZE-1] = TinyInstruction{"ADD", []int{1, 1, 1}, iopRO}
 	tm.data_memory[0] = 1
-	tm.data_memory[MEM_SIZE-1] = 100
+	tm.data_memory[DEF_MEM_SIZE-1] = 100
 	tm.registers[PC_REG] = 1
 
 	tm.resetState()
@@ -146,9 +148,9 @@ func TestResetState(t *testing.T) {
 		tm.instruction_memory[0]) {
 		t.Errorf("Resetting machine cleared instructions.")
 	} else if !reflect.DeepEqual(TinyInstruction{"ADD", []int{1, 1, 1}, iopRO},
-		tm.instruction_memory[MEM_SIZE-1]) {
+		tm.instruction_memory[DEF_MEM_SIZE-1]) {
 		t.Errorf("Resetting machine cleared instructions.")
-	} else if tm.data_memory[0] != MEM_SIZE-1 {
+	} else if tm.data_memory[0] != DEF_MEM_SIZE-1 {
 		t.Errorf("Resetting machine didn't reset memory state.")
 	} else if tm.registers[PC_REG] != 0 {
 		t.Errorf("Initializing machine didn't reset the program counter.")
@@ -158,22 +160,15 @@ func TestResetState(t *testing.T) {
 func TestInitializeMachine(t *testing.T) {
 	var tm TinyMachine
 
-	tm.cpustate = cpuDIV_ZERO
-	tm.instruction_memory[0] = TinyInstruction{"LDC", []int{1, 1, 1}, iopRA}
-	tm.instruction_memory[MEM_SIZE-1] = TinyInstruction{"ADD", []int{1, 1, 1}, iopRO}
-	tm.data_memory[0] = 1
-	tm.data_memory[MEM_SIZE-1] = 100
-	tm.registers[PC_REG] = 1
-
 	tm.initializeMachine(true)
 
 	if tm.cpustate != cpuOK {
 		t.Errorf("Initializing machine didn't clear halt state.")
 	} else if !reflect.DeepEqual(TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}, tm.instruction_memory[0]) {
 		t.Errorf("Initializing machine didn't clear instruction memory.")
-	} else if !reflect.DeepEqual(TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}, tm.instruction_memory[MEM_SIZE-1]) {
+	} else if !reflect.DeepEqual(TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}, tm.instruction_memory[DEF_MEM_SIZE-1]) {
 		t.Errorf("Initializing machine didn't clear instruction memory.")
-	} else if tm.data_memory[0] != MEM_SIZE-1 {
+	} else if tm.data_memory[0] != DEF_MEM_SIZE-1 {
 		t.Errorf("Initializing machine didn't reset memory state.")
 	} else if tm.registers[PC_REG] != 0 {
 		t.Errorf("Initializing machine didn't reset the program counter.")
@@ -361,10 +356,10 @@ func TestLDInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
-	tm.data_memory[MEM_SIZE-4] = 54321
-	tm.data_memory[MEM_SIZE-1] = 12345
-	tm.instruction_memory[0] = TinyInstruction{"LD", []int{0, 0, 0}, iopRM}  // Load MEM_SIZE
+	tm.registers = [NUM_REGS]int{0, DEF_MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
+	tm.data_memory[DEF_MEM_SIZE-4] = 54321
+	tm.data_memory[DEF_MEM_SIZE-1] = 12345
+	tm.instruction_memory[0] = TinyInstruction{"LD", []int{0, 0, 0}, iopRM}  // Load DEF_MEM_SIZE
 	tm.instruction_memory[1] = TinyInstruction{"LD", []int{0, 2, 1}, iopRM}  // Load 12345
 	tm.instruction_memory[2] = TinyInstruction{"LD", []int{0, -1, 1}, iopRM} // Load 54321
 
@@ -394,10 +389,10 @@ func TestSTInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{MEM_SIZE + 1, MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
-	tm.data_memory[MEM_SIZE-4] = 54321
-	tm.data_memory[MEM_SIZE-1] = 12345
-	tm.instruction_memory[0] = TinyInstruction{"ST", []int{0, 1, 2}, iopRM} // ST MEM_SIZE+1 -> 1
+	tm.registers = [NUM_REGS]int{DEF_MEM_SIZE + 1, DEF_MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
+	tm.data_memory[DEF_MEM_SIZE-4] = 54321
+	tm.data_memory[DEF_MEM_SIZE-1] = 12345
+	tm.instruction_memory[0] = TinyInstruction{"ST", []int{0, 1, 2}, iopRM} // ST DEF_MEM_SIZE+1 -> 1
 	tm.instruction_memory[1] = TinyInstruction{"ST", []int{1, 2, 1}, iopRM} // Load 12345
 
 	cases := []struct {
@@ -405,8 +400,8 @@ func TestSTInstruction(t *testing.T) {
 		expected_aval int
 		expected_cpu  TinyCPUState
 	}{
-		{1, MEM_SIZE + 1, cpuOK},
-		{MEM_SIZE - 1, MEM_SIZE - 3, cpuOK},
+		{1, DEF_MEM_SIZE + 1, cpuOK},
+		{DEF_MEM_SIZE - 1, DEF_MEM_SIZE - 3, cpuOK},
 	}
 	for _, c := range cases {
 		tm.stepProgram()
@@ -693,14 +688,14 @@ func TestDMEM_ERR_State(t *testing.T) {
 		expected_pc  int             // Expected PC value
 		expected_cpu TinyCPUState    // Expected CPU state
 	}{
-		{TinyInstruction{"LD", []int{0, MEM_SIZE, 1}, iopRM}, 1, cpuDMEM_ERR},
+		{TinyInstruction{"LD", []int{0, DEF_MEM_SIZE, 1}, iopRM}, 1, cpuDMEM_ERR},
 		{TinyInstruction{"LD", []int{0, -1, 1}, iopRM}, 1, cpuDMEM_ERR},
 		{TinyInstruction{"ST", []int{0, 0, 0}, iopRM}, 1, cpuDMEM_ERR},
 		{TinyInstruction{"ST", []int{0, -1, 1}, iopRM}, 1, cpuDMEM_ERR},
 	}
 	for i, c := range cases {
 		// Stuff some values into the registers
-		tm.registers = [NUM_REGS]int{MEM_SIZE, 0, 0, 0, 0, 0, 0, 0}
+		tm.registers = [NUM_REGS]int{DEF_MEM_SIZE, 0, 0, 0, 0, 0, 0, 0}
 		tm.instruction_memory[0] = c.given_inst // Load the instruction that should be a memory violation
 
 		tm.stepProgram()
@@ -724,7 +719,7 @@ func TestIMEM_ERR_State(t *testing.T) {
 
 	cases := []int{
 		-1,
-		MEM_SIZE,
+		DEF_MEM_SIZE,
 	}
 	for i, pc := range cases {
 		// Stuff some values into the registers
