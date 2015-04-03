@@ -355,14 +355,15 @@ func (tm *TinyMachine) loadProgram(progname string, fh io.Reader) bool {
 func (tm *TinyMachine) dumpRegisters() {
 	tm.speak("Current Tiny Machine register values:")
 
-	for i := 0; i < NUM_REGS; i++ {
-		switch i {
-		case PC_REG:
-			tm.speak("PC:", tm.registers[i])
-		default:
-			tm.speak(fmt.Sprintf("%2d: %d", i, tm.registers[i]))
-		}
+	regs_even := ""
+	regs_odd := ""
+
+	for i := 0; i < NUM_REGS; i += 2 {
+		regs_even += fmt.Sprintf("%2d: %011d  ", i, tm.registers[i])
+		regs_odd += fmt.Sprintf("%2d: %011d  ", i+1, tm.registers[i+1])
 	}
+
+	tm.speak(regs_even + "\n" + regs_odd)
 }
 
 func (tm *TinyMachine) dumpMemory(start_addr, end_addr int) {
