@@ -15,26 +15,31 @@ func TestParseRMop(t *testing.T) {
 		want_err string
 	}{
 		{"0,0(1)", []int{0, 0, 1}, ""},
-		{"10,10(10)", []int{10, 10, 10}, ""},
-		{"10,a(1)", nil, "Invalid arguments: 10,a(1)"},
+		{"2,12(2)", []int{2, 12, 2}, ""},
+		{"1,a(1)", nil, "Invalid arguments: 1,a(1)"},
 		{"a,10(1)", nil, "Invalid arguments: a,10(1)"},
 		{",10(1)", nil, "Invalid arguments: ,10(1)"},
 		{"1,(1)", nil, "Invalid arguments: 1,(1)"},
 		{"1,", nil, "Invalid arguments: 1,"},
 		{"1", nil, "Invalid arguments: 1"},
 		{"", nil, "Invalid arguments: "},
+		{"10,1(1)", nil, "Invalid arguments. Bad register: 10"},
+		{"1,1(12)", nil, "Invalid arguments. Bad register: 12"},
 	}
-	for _, c := range cases {
+	for i, c := range cases {
 		got, got_err := parseRMop(c.in)
-		if got_err != nil {
-			if c.want_err == "" {
-				t.Errorf("Unexpected error raised for parseRMop(%q): %q", c.in, got_err.Error())
+		if c.want == nil {
+			if got_err == nil {
+				t.Errorf("%d: Expected invalid result when calling parseRMop(%q).",
+					i, c.in)
 			} else if c.want_err != got_err.Error() {
-				t.Errorf("Expected error '%q' but got '%q'.", c.want_err, got_err.Error())
+				t.Errorf("%d: Expected error '%q' but got '%q'.",
+					i, c.want_err, got_err.Error())
 			}
-		}
-		if !reflect.DeepEqual(got, c.want) {
-			t.Errorf("parseRMop(%q) == %q, want %q.", c.in, got, c.want)
+		} else {
+			if !reflect.DeepEqual(got, c.want) {
+				t.Errorf("%d: parseRMop(%q) == %v, want %v.", i, c.in, got, c.want)
+			}
 		}
 	}
 }
@@ -46,26 +51,33 @@ func TestParseROop(t *testing.T) {
 		want_err string
 	}{
 		{"0,0,1", []int{0, 0, 1}, ""},
-		{"10,10,10", []int{10, 10, 10}, ""},
-		{"10,a,1", nil, "Invalid arguments: 10,a,1"},
+		{"2,2,2", []int{2, 2, 2}, ""},
+		{"2,a,1", nil, "Invalid arguments: 2,a,1"},
 		{"a,10,1", nil, "Invalid arguments: a,10,1"},
 		{",10,1", nil, "Invalid arguments: ,10,1"},
 		{"1,,1", nil, "Invalid arguments: 1,,1"},
 		{"1,", nil, "Invalid arguments: 1,"},
 		{"1", nil, "Invalid arguments: 1"},
 		{"", nil, "Invalid arguments: "},
+		{"12,1,1", nil, "Invalid arguments. Bad register: 12"},
+		{"2,13,1", nil, "Invalid arguments. Bad register: 13"},
+		{"2,1,14", nil, "Invalid arguments. Bad register: 14"},
 	}
-	for _, c := range cases {
+	for i, c := range cases {
 		got, got_err := parseROop(c.in)
-		if got_err != nil {
-			if c.want_err == "" {
-				t.Errorf("Unexpected error raised for parseROop(%q): %q", c.in, got_err.Error())
+
+		if c.want == nil {
+			if got_err == nil {
+				t.Errorf("%d: Expected invalid result when calling parseROop(%q).",
+					i, c.in)
 			} else if c.want_err != got_err.Error() {
-				t.Errorf("Expected error '%q' but got '%q'", c.want_err, got_err.Error())
+				t.Errorf("%d: Expected error '%q' but got '%q'.",
+					i, c.want_err, got_err.Error())
 			}
-		}
-		if !reflect.DeepEqual(got, c.want) {
-			t.Errorf("parseROop(%q) == %q, want %q", c.in, got, c.want)
+		} else {
+			if !reflect.DeepEqual(got, c.want) {
+				t.Errorf("%d: parseROop(%q) == %v, want %v.", i, c.in, got, c.want)
+			}
 		}
 	}
 }
