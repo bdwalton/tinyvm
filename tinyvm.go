@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -19,6 +20,11 @@ const PC_REG = 7   // The registered used as the program counter.
 
 var mem_size = flag.Int("mem_size", DEF_MEM_SIZE,
 	"This size of program and data memory.")
+
+type menuAction struct {
+	desc   string
+	action func(tm *TinyMachine)
+}
 
 type TinyInstructionType int
 
@@ -415,24 +421,84 @@ func (tm *TinyMachine) readNumber(prompt string, def int) int {
 	return def
 }
 
-func (tm *TinyMachine) Interact() {
-	menu := []struct {
-		key      string // The key to press to activate this option.
-		helptext string // The help text displayed
-	}{
-		{"c", "clear machine state"},
-		{"g", "go - run program to halt state"},
-		{"h", "display this help text"},
-		{"d", "display data memory"},
-		{"i", "display instruction memory"},
-		{"q", "quit the tiny machine simulator"},
-		{"r", "dump register contents"},
-		{"s", "step program forward by one instruction"},
-		{"t", "toggle execution tracing"},
+func handleClear(tm *TinyMachine) {
+	tm.resetState()
+}
+
+func handleDataMemoryDump(tm *TinyMachine) {
+	start_addr := tm.readNumber("Starting Address", 0)
+	end_addr := tm.readNumber("Ending Address", *mem_size-1)
+	if start_addr > end_addr || start_addr < 0 {
+		tm.speak("Invalid memory region")
 	}
 
+	if end_addr >= *mem_size {
+		tm.speak("Invalid memory region.")
+	} else {
+		tm.dumpMemory(start_addr, end_addr)
+	}
+}
+
+func handleInstructionMemoryDump(tm *TinyMachine) {
+	start_addr := tm.readNumber("Starting Address", 0)
+	end_addr := tm.readNumber("Ending Address", *mem_size-1)
+	if start_addr > end_addr || start_addr < 0 {
+		tm.speak("Invalid memory region.")
+	}
+
+	if end_addr >= *mem_size {
+		tm.speak("Invalid memory region.")
+	} else {
+		tm.dumpProgram(start_addr, end_addr)
+	}
+}
+
+func handleGo(tm *TinyMachine) {
+	tm.runProgram()
+}
+
+func handleQuit(tm *TinyMachine) {
+	tm.speak("Exiting.")
+	os.Exit(0)
+}
+
+func handleRegDump(tm *TinyMachine) {
+	tm.dumpRegisters()
+}
+
+func handleStep(tm *TinyMachine) {
+	tm.stepProgram()
+}
+
+func handleTrace(tm *TinyMachine) {
+	tm.trace = !tm.trace
+	tm.speak("Execution tracing is now", tm.trace)
+}
+
+func (tm *TinyMachine) Interact() {
+	menu := map[string]menuAction{
+		"c": menuAction{"clear machine state", handleClear},
+		"g": menuAction{"run program to halt state", handleGo},
+		"d": menuAction{"display data memory", handleDataMemoryDump},
+		"h": menuAction{"display this help text", nil},
+		"?": menuAction{"display this help text", nil},
+		"i": menuAction{"display instruction memory", handleInstructionMemoryDump},
+		"q": menuAction{"quit the tiny machine simulator", handleQuit},
+		"r": menuAction{"dump register contents", handleRegDump},
+		"s": menuAction{"step program forward by one instruction", handleStep},
+		"t": menuAction{"toggle execution tracing", handleTrace},
+	}
+
+	sorted_keys := make([]string, len(menu))
+	i := 0
+	for k, _ := range menu {
+		sorted_keys[i] = k
+		i++
+	}
+	sort.Strings(sorted_keys)
+
 	tm.speak("Tiny Machine simulation (enter h for help)")
-interactive:
+
 	for {
 		fmt.Printf("Enter command: ")
 		input, err := tm.stdin.ReadString('\n')
@@ -444,60 +510,28 @@ interactive:
 				input = "q\n"
 			} else {
 				// This will be handled with the unknown case below.
-				input = "ijustmashedthekeyboard"
+				input = "ijustmashedthekeyboard\n"
 			}
 		}
 
 		command := input[:len(input)-1]
+		menuitem, ok := menu[command]
 
-		switch command {
-		case "c":
-			tm.resetState()
-		case "g":
-			tm.runProgram()
-		case "h":
-			for _, menuitem := range menu {
-				fmt.Printf("%s: %s\n", menuitem.key, menuitem.helptext)
+		switch ok {
+		case true:
+			switch menuitem.action {
+			case nil:
+				// Show the help text if the menu key has no action
+				for _, k := range sorted_keys {
+					fmt.Printf("%s: %s\n", k, menu[k].desc)
+				}
+			default:
+				menuitem.action(tm)
 			}
-		case "d":
-			start_addr := tm.readNumber("Starting Address", 0)
-			end_addr := tm.readNumber("Ending Address", *mem_size-1)
-			if start_addr > end_addr || start_addr < 0 {
-				tm.speak("Invalid memory region.")
-			}
-
-			if end_addr >= *mem_size {
-				tm.speak("Invalid memory region.")
-			} else {
-				tm.dumpMemory(start_addr, end_addr)
-			}
-		case "i":
-			start_addr := tm.readNumber("Starting Address", 0)
-			end_addr := tm.readNumber("Ending Address", *mem_size-1)
-			if start_addr > end_addr || start_addr < 0 {
-				tm.speak("Invalid memory region.")
-			}
-
-			if end_addr >= *mem_size {
-				tm.speak("Invalid memory region.")
-			} else {
-				tm.dumpProgram(start_addr, end_addr)
-			}
-		case "q":
-			tm.speak("Exiting.")
-			break interactive
-		case "r":
-			tm.dumpRegisters()
-		case "s":
-			tm.stepProgram()
-		case "t":
-			tm.trace = !tm.trace
-			tm.speak("Execution tracing is now", tm.trace)
 		default:
 			tm.speak("Not implemented yet. Try 'h' for help.")
 		}
 	}
-
 }
 
 func main() {
