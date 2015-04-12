@@ -18,7 +18,7 @@ const DEF_MEM_SIZE = 1024
 const NUM_REGS = 8 // The total number of registers available.
 const PC_REG = 7   // The registered used as the program counter.
 
-var mem_size = flag.Int("mem_size", DEF_MEM_SIZE,
+var mem_size = flag.Uint64("mem_size", DEF_MEM_SIZE,
 	"This size of program and data memory.")
 
 type menuAction struct {
@@ -38,7 +38,7 @@ const (
 // arguments.
 type TinyInstruction struct {
 	iop     string
-	iargs   []int
+	iargs   []int32
 	ioptype TinyInstructionType
 }
 
@@ -55,8 +55,9 @@ const (
 /* A structure representing a tiny machine */
 type TinyMachine struct {
 	stdin              *bufio.Reader     // To handle data input
-	registers          [NUM_REGS]int     // 8 registers
-	data_memory        []int             // Data memory
+	registers          [NUM_REGS]int32   // 8 registers
+	mem_size           int32             // How many memory slots
+	data_memory        []int32           // Data memory
 	instruction_memory []TinyInstruction // Instruction memory
 	trace              bool              // Output instructions as they're executed
 	cpustate           TinyCPUState      // See cpu* constants above
@@ -76,15 +77,15 @@ func (ti TinyInstruction) String() string {
 }
 
 // Operands are of the form r,s,t where r, s and t are all integers
-func parseROop(args string) ([]int, error) {
+func parseROop(args string) ([]int32, error) {
 	string_args := strings.Split(args, ",")
-	converted_args := make([]int, 3)
+	converted_args := make([]int32, 3)
 
 	if len(string_args) != 3 {
 		return nil, errors.New("Invalid arguments: " + args)
 	} else {
 		for i := 0; i < 3; i++ {
-			num, err := strconv.Atoi(string_args[i])
+			num, err := strconv.ParseInt(string_args[i], 10, 32)
 			if err != nil {
 				return nil, errors.New("Invalid arguments: " + args)
 			} else {
@@ -92,7 +93,7 @@ func parseROop(args string) ([]int, error) {
 				if num < 0 || num >= NUM_REGS {
 					return nil, errors.New("Invalid arguments. Bad register: " + string_args[i])
 				} else {
-					converted_args[i] = num
+					converted_args[i] = int32(num)
 				}
 			}
 		}
@@ -102,8 +103,8 @@ func parseROop(args string) ([]int, error) {
 }
 
 // Operands are of the form r,s(t) where r, s and t are all integers
-func parseRMop(args string) ([]int, error) {
-	converted_args := make([]int, 3)
+func parseRMop(args string) ([]int32, error) {
+	converted_args := make([]int32, 3)
 
 	x := strings.Index(args, ",")
 	y := strings.Index(args, "(")
@@ -116,7 +117,7 @@ func parseRMop(args string) ([]int, error) {
 
 		for i, bounds := range indexes {
 			str_num := args[bounds[0]:bounds[1]]
-			num, err := strconv.Atoi(str_num)
+			num, err := strconv.ParseInt(str_num, 10, 32)
 
 			if err != nil {
 				return nil, errors.New("Invalid arguments: " + args)
@@ -125,7 +126,7 @@ func parseRMop(args string) ([]int, error) {
 				if (i == 0 || i == 2) && (num < 0 || num >= NUM_REGS) {
 					return nil, errors.New("Invalid arguments. Bad register: " + str_num)
 				} else {
-					converted_args[i] = num
+					converted_args[i] = int32(num)
 				}
 			}
 		}
@@ -135,7 +136,7 @@ func parseRMop(args string) ([]int, error) {
 }
 
 func parseInstruction(line string) (TinyInstruction, error) {
-	var args []int
+	var args []int32
 	var err error
 	var ti TinyInstruction
 	var ioptype TinyInstructionType
@@ -180,25 +181,26 @@ func (tm *TinyMachine) speak(saywhat ...interface{}) {
 }
 
 func (tm *TinyMachine) initializeMachine(clearprogram bool) {
-	tm.data_memory = make([]int, *mem_size)
+	tm.mem_size = int32(*mem_size)
+	tm.data_memory = make([]int32, tm.mem_size)
 
 	for i := 0; i < NUM_REGS; i++ {
 		tm.registers[i] = 0
 	}
 
-	for i := 0; i < *mem_size; i++ {
+	for i := 0; i < int(tm.mem_size); i++ {
 		tm.data_memory[i] = 0
 	}
 
 	if clearprogram {
-		tm.instruction_memory = make([]TinyInstruction, *mem_size)
-		for i := 0; i < *mem_size; i++ {
-			tm.instruction_memory[i] = TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}
+		tm.instruction_memory = make([]TinyInstruction, tm.mem_size)
+		for i := 0; i < int(tm.mem_size); i++ {
+			tm.instruction_memory[i] = TinyInstruction{"HALT", []int32{0, 0, 0}, iopRO}
 		}
 	}
 
 	// Store the size of the memory in the first memory element.
-	tm.data_memory[0] = *mem_size - 1
+	tm.data_memory[0] = tm.mem_size - 1
 	tm.cpustate = cpuOK
 	tm.registers[PC_REG] = 0
 	tm.stdin = bufio.NewReader(os.Stdin) // An io helper.
@@ -218,7 +220,7 @@ func (tm *TinyMachine) stepProgram() {
 	}
 
 	pc := tm.registers[PC_REG]
-	if pc < 0 || pc > *mem_size-1 {
+	if pc < 0 || pc > tm.mem_size-1 {
 		tm.cpustate = cpuIMEM_ERR
 	} else {
 		// Step the program counter
@@ -260,13 +262,13 @@ func (tm *TinyMachine) stepProgram() {
 		case "LDC":
 			tm.registers[r] = s
 		case "LD":
-			if a < 0 || a >= *mem_size {
+			if a < 0 || a >= tm.mem_size {
 				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.registers[r] = tm.data_memory[a]
 			}
 		case "ST":
-			if a < 0 || a >= *mem_size {
+			if a < 0 || a >= tm.mem_size {
 				tm.cpustate = cpuDMEM_ERR
 			} else {
 				tm.data_memory[a] = tm.registers[r]
@@ -384,7 +386,7 @@ func (tm *TinyMachine) dumpRegisters() {
 	tm.speak(regs_even + "\n" + regs_odd)
 }
 
-func (tm *TinyMachine) dumpMemory(start_addr, end_addr int) {
+func (tm *TinyMachine) dumpMemory(start_addr, end_addr int32) {
 	tm.speak("Dumping data memory from address %d to %d", start_addr, end_addr)
 
 	for i := start_addr; i <= end_addr; i++ {
@@ -392,7 +394,7 @@ func (tm *TinyMachine) dumpMemory(start_addr, end_addr int) {
 	}
 }
 
-func (tm *TinyMachine) dumpProgram(start_addr, end_addr int) {
+func (tm *TinyMachine) dumpProgram(start_addr, end_addr int32) {
 	fmt.Printf("Dumping instruction memory from address %d to %d.\n", start_addr, end_addr)
 
 	for i := start_addr; i <= end_addr; i++ {
@@ -400,7 +402,7 @@ func (tm *TinyMachine) dumpProgram(start_addr, end_addr int) {
 	}
 }
 
-func (tm *TinyMachine) readNumber(prompt string, def int) int {
+func (tm *TinyMachine) readNumber(prompt string, def int32) int32 {
 	for {
 		fmt.Printf("%s: ", prompt)
 		input, err := tm.stdin.ReadString('\n')
@@ -408,12 +410,12 @@ func (tm *TinyMachine) readNumber(prompt string, def int) int {
 			tm.speak("Error reading input. Returning default", def)
 			break
 		} else {
-			num, err := strconv.Atoi(input[:len(input)-1])
+			num, err := strconv.ParseInt(input[:len(input)-1], 10, 32)
 			if err != nil {
 				tm.speak("Error converting input. Returning default", def)
 				break
 			} else {
-				return num
+				return int32(num)
 			}
 		}
 	}
@@ -427,12 +429,12 @@ func handleClear(tm *TinyMachine) {
 
 func handleDataMemoryDump(tm *TinyMachine) {
 	start_addr := tm.readNumber("Starting Address", 0)
-	end_addr := tm.readNumber("Ending Address", *mem_size-1)
+	end_addr := tm.readNumber("Ending Address", tm.mem_size-1)
 	if start_addr > end_addr || start_addr < 0 {
 		tm.speak("Invalid memory region")
 	}
 
-	if end_addr >= *mem_size {
+	if end_addr >= tm.mem_size {
 		tm.speak("Invalid memory region.")
 	} else {
 		tm.dumpMemory(start_addr, end_addr)
@@ -441,12 +443,12 @@ func handleDataMemoryDump(tm *TinyMachine) {
 
 func handleInstructionMemoryDump(tm *TinyMachine) {
 	start_addr := tm.readNumber("Starting Address", 0)
-	end_addr := tm.readNumber("Ending Address", *mem_size-1)
+	end_addr := tm.readNumber("Ending Address", tm.mem_size-1)
 	if start_addr > end_addr || start_addr < 0 {
 		tm.speak("Invalid memory region.")
 	}
 
-	if end_addr >= *mem_size {
+	if end_addr >= tm.mem_size {
 		tm.speak("Invalid memory region.")
 	} else {
 		tm.dumpProgram(start_addr, end_addr)

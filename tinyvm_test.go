@@ -11,11 +11,11 @@ import (
 func TestParseRMop(t *testing.T) {
 	cases := []struct {
 		in       string
-		want     []int
+		want     []int32
 		want_err string
 	}{
-		{"0,0(1)", []int{0, 0, 1}, ""},
-		{"2,12(2)", []int{2, 12, 2}, ""},
+		{"0,0(1)", []int32{0, 0, 1}, ""},
+		{"2,12(2)", []int32{2, 12, 2}, ""},
 		{"1,a(1)", nil, "Invalid arguments: 1,a(1)"},
 		{"a,10(1)", nil, "Invalid arguments: a,10(1)"},
 		{",10(1)", nil, "Invalid arguments: ,10(1)"},
@@ -47,11 +47,11 @@ func TestParseRMop(t *testing.T) {
 func TestParseROop(t *testing.T) {
 	cases := []struct {
 		in       string
-		want     []int
+		want     []int32
 		want_err string
 	}{
-		{"0,0,1", []int{0, 0, 1}, ""},
-		{"2,2,2", []int{2, 2, 2}, ""},
+		{"0,0,1", []int32{0, 0, 1}, ""},
+		{"2,2,2", []int32{2, 2, 2}, ""},
 		{"2,a,1", nil, "Invalid arguments: 2,a,1"},
 		{"a,10,1", nil, "Invalid arguments: a,10,1"},
 		{",10,1", nil, "Invalid arguments: ,10,1"},
@@ -89,28 +89,28 @@ func TestParseInstruction(t *testing.T) {
 		want_err string
 	}{
 		// Valid RO instructions
-		{"HALT   0,0,1", TinyInstruction{"HALT", []int{0, 0, 1}, iopRO}, ""},
-		{"IN     0,0,1", TinyInstruction{"IN", []int{0, 0, 1}, iopRO}, ""},
-		{"OUT    0,0,0", TinyInstruction{"OUT", []int{0, 0, 0}, iopRO}, ""},
-		{"ADD    0,0,0", TinyInstruction{"ADD", []int{0, 0, 0}, iopRO}, ""},
-		{"SUB    0,0,0", TinyInstruction{"SUB", []int{0, 0, 0}, iopRO}, ""},
-		{"MUL    0,0,0", TinyInstruction{"MUL", []int{0, 0, 0}, iopRO}, ""},
-		{"DIV    0,0,0", TinyInstruction{"DIV", []int{0, 0, 0}, iopRO}, ""},
+		{"HALT   0,0,1", TinyInstruction{"HALT", []int32{0, 0, 1}, iopRO}, ""},
+		{"IN     0,0,1", TinyInstruction{"IN", []int32{0, 0, 1}, iopRO}, ""},
+		{"OUT    0,0,0", TinyInstruction{"OUT", []int32{0, 0, 0}, iopRO}, ""},
+		{"ADD    0,0,0", TinyInstruction{"ADD", []int32{0, 0, 0}, iopRO}, ""},
+		{"SUB    0,0,0", TinyInstruction{"SUB", []int32{0, 0, 0}, iopRO}, ""},
+		{"MUL    0,0,0", TinyInstruction{"MUL", []int32{0, 0, 0}, iopRO}, ""},
+		{"DIV    0,0,0", TinyInstruction{"DIV", []int32{0, 0, 0}, iopRO}, ""},
 		// Valid RM instructions
-		{"LD     0,0(0)", TinyInstruction{"LD", []int{0, 0, 0}, iopRM}, ""},
-		{"ST     0,0(0)", TinyInstruction{"ST", []int{0, 0, 0}, iopRM}, ""},
+		{"LD     0,0(0)", TinyInstruction{"LD", []int32{0, 0, 0}, iopRM}, ""},
+		{"ST     0,0(0)", TinyInstruction{"ST", []int32{0, 0, 0}, iopRM}, ""},
 		// Valid RA instructions
-		{"LDA    0,0(0)", TinyInstruction{"LDA", []int{0, 0, 0}, iopRA}, ""},
-		{"LDC    0,0(0)", TinyInstruction{"LDC", []int{0, 0, 0}, iopRA}, ""},
-		{"JLT    0,0(0)", TinyInstruction{"JLT", []int{0, 0, 0}, iopRA}, ""},
-		{"JLE    0,0(0)", TinyInstruction{"JLE", []int{0, 0, 0}, iopRA}, ""},
-		{"JGT    0,0(0)", TinyInstruction{"JGT", []int{0, 0, 0}, iopRA}, ""},
-		{"JGE    0,0(0)", TinyInstruction{"JGE", []int{0, 0, 0}, iopRA}, ""},
-		{"JEQ    0,0(0)", TinyInstruction{"JEQ", []int{0, 0, 0}, iopRA}, ""},
-		{"JNE    0,0(0)", TinyInstruction{"JNE", []int{0, 0, 0}, iopRA}, ""},
+		{"LDA    0,0(0)", TinyInstruction{"LDA", []int32{0, 0, 0}, iopRA}, ""},
+		{"LDC    0,0(0)", TinyInstruction{"LDC", []int32{0, 0, 0}, iopRA}, ""},
+		{"JLT    0,0(0)", TinyInstruction{"JLT", []int32{0, 0, 0}, iopRA}, ""},
+		{"JLE    0,0(0)", TinyInstruction{"JLE", []int32{0, 0, 0}, iopRA}, ""},
+		{"JGT    0,0(0)", TinyInstruction{"JGT", []int32{0, 0, 0}, iopRA}, ""},
+		{"JGE    0,0(0)", TinyInstruction{"JGE", []int32{0, 0, 0}, iopRA}, ""},
+		{"JEQ    0,0(0)", TinyInstruction{"JEQ", []int32{0, 0, 0}, iopRA}, ""},
+		{"JNE    0,0(0)", TinyInstruction{"JNE", []int32{0, 0, 0}, iopRA}, ""},
 		// Garbage spaces are handled properly
-		{"   HALT  0,0,1   ", TinyInstruction{"HALT", []int{0, 0, 1}, iopRO}, ""},
-		{"   LD  0,0(1)   ", TinyInstruction{"LD", []int{0, 0, 1}, iopRM}, ""},
+		{"   HALT  0,0,1   ", TinyInstruction{"HALT", []int32{0, 0, 1}, iopRO}, ""},
+		{"   LD  0,0(1)   ", TinyInstruction{"LD", []int32{0, 0, 1}, iopRM}, ""},
 		// RM format for RO opcode
 		{"IN    0,0(1)", TinyInstruction{}, "Invalid arguments for opcode IN: '0,0(1)'"},
 		// RO format for RM opcode
@@ -148,8 +148,8 @@ func TestResetState(t *testing.T) {
 	tm.initializeMachine(true)
 
 	tm.cpustate = cpuHALTED
-	tm.instruction_memory[0] = TinyInstruction{"LDC", []int{1, 1, 1}, iopRA}
-	tm.instruction_memory[DEF_MEM_SIZE-1] = TinyInstruction{"ADD", []int{1, 1, 1}, iopRO}
+	tm.instruction_memory[0] = TinyInstruction{"LDC", []int32{1, 1, 1}, iopRA}
+	tm.instruction_memory[DEF_MEM_SIZE-1] = TinyInstruction{"ADD", []int32{1, 1, 1}, iopRO}
 	tm.data_memory[0] = 1
 	tm.data_memory[DEF_MEM_SIZE-1] = 100
 	tm.registers[PC_REG] = 1
@@ -158,10 +158,10 @@ func TestResetState(t *testing.T) {
 
 	if tm.cpustate != cpuOK {
 		t.Errorf("Resetting machine didn't clear halt state.")
-	} else if !reflect.DeepEqual(TinyInstruction{"LDC", []int{1, 1, 1}, iopRA},
+	} else if !reflect.DeepEqual(TinyInstruction{"LDC", []int32{1, 1, 1}, iopRA},
 		tm.instruction_memory[0]) {
 		t.Errorf("Resetting machine cleared instructions.")
-	} else if !reflect.DeepEqual(TinyInstruction{"ADD", []int{1, 1, 1}, iopRO},
+	} else if !reflect.DeepEqual(TinyInstruction{"ADD", []int32{1, 1, 1}, iopRO},
 		tm.instruction_memory[DEF_MEM_SIZE-1]) {
 		t.Errorf("Resetting machine cleared instructions.")
 	} else if tm.data_memory[0] != DEF_MEM_SIZE-1 {
@@ -182,19 +182,19 @@ func TestLoadProgram(t *testing.T) {
 	}{
 		// Comment lines ignored
 		{"LDC 1,1(0)\n* This is a comment\nADD 1,1,1\n",
-			true, []int{0, 1}, []TinyInstruction{{"LDC", []int{1, 1, 0}, iopRA},
-				{"ADD", []int{1, 1, 1}, iopRO}}},
+			true, []int{0, 1}, []TinyInstruction{{"LDC", []int32{1, 1, 0}, iopRA},
+				{"ADD", []int32{1, 1, 1}, iopRO}}},
 		{"ST 1,1(0)\nSUB 1,1,1\n",
-			true, []int{1}, []TinyInstruction{{"SUB", []int{1, 1, 1}, iopRO}}},
+			true, []int{1}, []TinyInstruction{{"SUB", []int32{1, 1, 1}, iopRO}}},
 		// Blank lines ignored.
 		{"ST 1,1(0)\n\nSUB 1,1,1\n",
-			true, []int{1}, []TinyInstruction{{"SUB", []int{1, 1, 1}, iopRO}}},
+			true, []int{1}, []TinyInstruction{{"SUB", []int32{1, 1, 1}, iopRO}}},
 		// Invalid instruction
 		{"STORE 1,1(0)\nSUB 1,1,1\n",
 			false, []int{}, []TinyInstruction{}},
 		// Empty program
 		{"",
-			true, []int{0}, []TinyInstruction{{"HALT", []int{0, 0, 0}, iopRO}}},
+			true, []int{0}, []TinyInstruction{{"HALT", []int32{0, 0, 0}, iopRO}}},
 	}
 
 	for i, c := range cases {
@@ -223,9 +223,9 @@ func TestInitializeMachine(t *testing.T) {
 
 	if tm.cpustate != cpuOK {
 		t.Errorf("Initializing machine didn't clear halt state.")
-	} else if !reflect.DeepEqual(TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}, tm.instruction_memory[0]) {
+	} else if !reflect.DeepEqual(TinyInstruction{"HALT", []int32{0, 0, 0}, iopRO}, tm.instruction_memory[0]) {
 		t.Errorf("Initializing machine didn't clear instruction memory.")
-	} else if !reflect.DeepEqual(TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}, tm.instruction_memory[DEF_MEM_SIZE-1]) {
+	} else if !reflect.DeepEqual(TinyInstruction{"HALT", []int32{0, 0, 0}, iopRO}, tm.instruction_memory[DEF_MEM_SIZE-1]) {
 		t.Errorf("Initializing machine didn't clear instruction memory.")
 	} else if tm.data_memory[0] != DEF_MEM_SIZE-1 {
 		t.Errorf("Initializing machine didn't reset memory state.")
@@ -238,7 +238,7 @@ func TestHALTInstruction(t *testing.T) {
 	var tm TinyMachine
 
 	cases := []struct {
-		expected_pc  int
+		expected_pc  int32
 		expected_cpu TinyCPUState
 	}{
 		{1, cpuOK},
@@ -251,13 +251,13 @@ func TestHALTInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, -1, 10, 2, 2, math.MinInt32, 5, 0}
+	tm.registers = [NUM_REGS]int32{0, -1, 10, 2, 2, math.MinInt32, 5, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"SUB", []int{0, 2, 3}, iopRO}
-	tm.instruction_memory[1] = TinyInstruction{"SUB", []int{0, 3, 6}, iopRO}
+	tm.instruction_memory[0] = TinyInstruction{"SUB", []int32{0, 2, 3}, iopRO}
+	tm.instruction_memory[1] = TinyInstruction{"SUB", []int32{0, 3, 6}, iopRO}
 	// Not necessary, but include for completeness. Machine is initialized with
 	// HALT instructions.
-	tm.instruction_memory[2] = TinyInstruction{"HALT", []int{0, 0, 0}, iopRO}
+	tm.instruction_memory[2] = TinyInstruction{"HALT", []int32{0, 0, 0}, iopRO}
 
 	for _, c := range cases {
 		tm.stepProgram()
@@ -277,15 +277,15 @@ func TestDIVInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, 1, 10, 2, 2, 10, 0, 0}
+	tm.registers = [NUM_REGS]int32{0, 1, 10, 2, 2, 10, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"DIV", []int{2, 2, 3}, iopRO} // 10 / 2 -> reg2
-	tm.instruction_memory[1] = TinyInstruction{"DIV", []int{4, 4, 5}, iopRO} // 2 / 10 -> reg4
-	tm.instruction_memory[2] = TinyInstruction{"DIV", []int{0, 1, 0}, iopRO} // 1 / 0  -> reg0
+	tm.instruction_memory[0] = TinyInstruction{"DIV", []int32{2, 2, 3}, iopRO} // 10 / 2 -> reg2
+	tm.instruction_memory[1] = TinyInstruction{"DIV", []int32{4, 4, 5}, iopRO} // 2 / 10 -> reg4
+	tm.instruction_memory[2] = TinyInstruction{"DIV", []int32{0, 1, 0}, iopRO} // 1 / 0  -> reg0
 
 	cases := []struct {
-		expected_reg int
-		expected_val int
+		expected_reg int32
+		expected_val int32
 		expected_cpu TinyCPUState
 	}{
 		{2, 5, cpuOK},
@@ -310,16 +310,16 @@ func TestMULInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, -1, 10, 2, 4, -5, -7, 0}
+	tm.registers = [NUM_REGS]int32{0, -1, 10, 2, 4, -5, -7, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"MUL", []int{2, 2, 3}, iopRO} // 10 * 2  -> reg2
-	tm.instruction_memory[1] = TinyInstruction{"MUL", []int{4, 4, 5}, iopRO} // 4 * -5  -> reg4
-	tm.instruction_memory[2] = TinyInstruction{"MUL", []int{0, 1, 0}, iopRO} // 0 * -1  -> reg0
-	tm.instruction_memory[3] = TinyInstruction{"MUL", []int{0, 5, 6}, iopRO} // -5 * -7 -> reg0
+	tm.instruction_memory[0] = TinyInstruction{"MUL", []int32{2, 2, 3}, iopRO} // 10 * 2  -> reg2
+	tm.instruction_memory[1] = TinyInstruction{"MUL", []int32{4, 4, 5}, iopRO} // 4 * -5  -> reg4
+	tm.instruction_memory[2] = TinyInstruction{"MUL", []int32{0, 1, 0}, iopRO} // 0 * -1  -> reg0
+	tm.instruction_memory[3] = TinyInstruction{"MUL", []int32{0, 5, 6}, iopRO} // -5 * -7 -> reg0
 
 	cases := []struct {
-		expected_reg int
-		expected_val int
+		expected_reg int32
+		expected_val int32
 		expected_cpu TinyCPUState
 	}{
 		{2, 20, cpuOK},
@@ -345,16 +345,16 @@ func TestADDInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, 1, 10, 2, 2, math.MaxInt32, 5, 0}
+	tm.registers = [NUM_REGS]int32{0, 1, 10, 2, 2, math.MaxInt32, 5, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"ADD", []int{0, 2, 3}, iopRO} // 10 + 2  -> reg0
-	tm.instruction_memory[1] = TinyInstruction{"ADD", []int{0, 3, 6}, iopRO} // 2 + 5   -> reg0
-	tm.instruction_memory[2] = TinyInstruction{"ADD", []int{0, 1, 0}, iopRO} // 1 + 7   -> reg0
-	tm.instruction_memory[3] = TinyInstruction{"ADD", []int{0, 1, 5}, iopRO} // 1 + MAX -> reg0
+	tm.instruction_memory[0] = TinyInstruction{"ADD", []int32{0, 2, 3}, iopRO} // 10 + 2  -> reg0
+	tm.instruction_memory[1] = TinyInstruction{"ADD", []int32{0, 3, 6}, iopRO} // 2 + 5   -> reg0
+	tm.instruction_memory[2] = TinyInstruction{"ADD", []int32{0, 1, 0}, iopRO} // 1 + 7   -> reg0
+	tm.instruction_memory[3] = TinyInstruction{"ADD", []int32{0, 1, 5}, iopRO} // 1 + MAX -> reg0
 
 	cases := []struct {
-		expected_reg int
-		expected_val int
+		expected_reg int32
+		expected_val int32
 		expected_cpu TinyCPUState
 	}{
 		{0, 12, cpuOK},
@@ -380,16 +380,16 @@ func TestSUBInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, -1, 10, 2, 2, math.MinInt32, 5, 0}
+	tm.registers = [NUM_REGS]int32{0, -1, 10, 2, 2, math.MinInt32, 5, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"SUB", []int{0, 2, 3}, iopRO} // 10 - 2  -> reg0
-	tm.instruction_memory[1] = TinyInstruction{"SUB", []int{0, 3, 6}, iopRO} // 2 - 5   -> reg0
-	tm.instruction_memory[2] = TinyInstruction{"SUB", []int{0, 1, 0}, iopRO} // -1 - -3  -> reg0
-	tm.instruction_memory[3] = TinyInstruction{"SUB", []int{0, 1, 5}, iopRO} // -1 - MIN -> reg0
+	tm.instruction_memory[0] = TinyInstruction{"SUB", []int32{0, 2, 3}, iopRO} // 10 - 2  -> reg0
+	tm.instruction_memory[1] = TinyInstruction{"SUB", []int32{0, 3, 6}, iopRO} // 2 - 5   -> reg0
+	tm.instruction_memory[2] = TinyInstruction{"SUB", []int32{0, 1, 0}, iopRO} // -1 - -3  -> reg0
+	tm.instruction_memory[3] = TinyInstruction{"SUB", []int32{0, 1, 5}, iopRO} // -1 - MIN -> reg0
 
 	cases := []struct {
-		expected_reg int
-		expected_val int
+		expected_reg int32
+		expected_val int32
 		expected_cpu TinyCPUState
 	}{
 		{0, 8, cpuOK},
@@ -415,16 +415,16 @@ func TestLDInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, DEF_MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
+	tm.registers = [NUM_REGS]int32{0, DEF_MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
 	tm.data_memory[DEF_MEM_SIZE-4] = 54321
 	tm.data_memory[DEF_MEM_SIZE-1] = 12345
-	tm.instruction_memory[0] = TinyInstruction{"LD", []int{0, 0, 0}, iopRM}  // Load DEF_MEM_SIZE
-	tm.instruction_memory[1] = TinyInstruction{"LD", []int{0, 2, 1}, iopRM}  // Load 12345
-	tm.instruction_memory[2] = TinyInstruction{"LD", []int{0, -1, 1}, iopRM} // Load 54321
+	tm.instruction_memory[0] = TinyInstruction{"LD", []int32{0, 0, 0}, iopRM}  // Load DEF_MEM_SIZE
+	tm.instruction_memory[1] = TinyInstruction{"LD", []int32{0, 2, 1}, iopRM}  // Load 12345
+	tm.instruction_memory[2] = TinyInstruction{"LD", []int32{0, -1, 1}, iopRM} // Load 54321
 
 	cases := []struct {
-		expected_reg int
-		expected_val int
+		expected_reg int32
+		expected_val int32
 		expected_cpu TinyCPUState
 	}{
 		{0, 1023, cpuOK},
@@ -448,15 +448,15 @@ func TestSTInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{DEF_MEM_SIZE + 1, DEF_MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
+	tm.registers = [NUM_REGS]int32{DEF_MEM_SIZE + 1, DEF_MEM_SIZE - 3, 0, 0, 0, 0, 0, 0}
 	tm.data_memory[DEF_MEM_SIZE-4] = 54321
 	tm.data_memory[DEF_MEM_SIZE-1] = 12345
-	tm.instruction_memory[0] = TinyInstruction{"ST", []int{0, 1, 2}, iopRM} // ST DEF_MEM_SIZE+1 -> 1
-	tm.instruction_memory[1] = TinyInstruction{"ST", []int{1, 2, 1}, iopRM} // Load 12345
+	tm.instruction_memory[0] = TinyInstruction{"ST", []int32{0, 1, 2}, iopRM} // ST DEF_MEM_SIZE+1 -> 1
+	tm.instruction_memory[1] = TinyInstruction{"ST", []int32{1, 2, 1}, iopRM} // Load 12345
 
 	cases := []struct {
-		expected_addr int
-		expected_aval int
+		expected_addr int32
+		expected_aval int32
 		expected_cpu  TinyCPUState
 	}{
 		{1, DEF_MEM_SIZE + 1, cpuOK},
@@ -480,14 +480,14 @@ func TestLDCInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, 0, 0, 0, 0, 0, 0, 0}
+	tm.registers = [NUM_REGS]int32{0, 0, 0, 0, 0, 0, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"LDC", []int{0, 100, 0}, iopRA} // 100 -> reg0
-	tm.instruction_memory[1] = TinyInstruction{"LDC", []int{1, -2, 1}, iopRA}  // -2 -> reg1
+	tm.instruction_memory[0] = TinyInstruction{"LDC", []int32{0, 100, 0}, iopRA} // 100 -> reg0
+	tm.instruction_memory[1] = TinyInstruction{"LDC", []int32{1, -2, 1}, iopRA}  // -2 -> reg1
 
 	cases := []struct {
-		expected_reg int
-		expected_val int
+		expected_reg int32
+		expected_val int32
 		expected_cpu TinyCPUState
 	}{
 		{0, 100, cpuOK},
@@ -511,15 +511,15 @@ func TestLDAInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, 0, 0, 0, 0, 0, 0, 0}
+	tm.registers = [NUM_REGS]int32{0, 0, 0, 0, 0, 0, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"LDA", []int{0, 100, 0}, iopRA} // 100 -> reg0
-	tm.instruction_memory[1] = TinyInstruction{"LDA", []int{3, -2, 0}, iopRA}  // 98 -> reg3
-	tm.instruction_memory[2] = TinyInstruction{"LDA", []int{4, 5, 3}, iopRA}   // 103 -> reg4
+	tm.instruction_memory[0] = TinyInstruction{"LDA", []int32{0, 100, 0}, iopRA} // 100 -> reg0
+	tm.instruction_memory[1] = TinyInstruction{"LDA", []int32{3, -2, 0}, iopRA}  // 98 -> reg3
+	tm.instruction_memory[2] = TinyInstruction{"LDA", []int32{4, 5, 3}, iopRA}   // 103 -> reg4
 
 	cases := []struct {
-		expected_reg int
-		expected_val int
+		expected_reg int32
+		expected_val int32
 		expected_cpu TinyCPUState
 	}{
 		{0, 100, cpuOK},
@@ -544,14 +544,14 @@ func TestJLTInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{-1, -2, 0, 0, 0, 0, 0, 0}
+	tm.registers = [NUM_REGS]int32{-1, -2, 0, 0, 0, 0, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"JLT", []int{0, 100, 2}, iopRA} // pcreg -> 100
-	tm.instruction_memory[2] = TinyInstruction{"JLT", []int{4, 5, 3}, iopRA}   // !(pcreg -> 0)
-	tm.instruction_memory[100] = TinyInstruction{"JLT", []int{1, 3, 0}, iopRA} // pcreg -> 2
+	tm.instruction_memory[0] = TinyInstruction{"JLT", []int32{0, 100, 2}, iopRA} // pcreg -> 100
+	tm.instruction_memory[2] = TinyInstruction{"JLT", []int32{4, 5, 3}, iopRA}   // !(pcreg -> 0)
+	tm.instruction_memory[100] = TinyInstruction{"JLT", []int32{1, 3, 0}, iopRA} // pcreg -> 2
 
 	cases := []struct {
-		expected_pc  int          // Expected PC value
+		expected_pc  int32        // Expected PC value
 		expected_cpu TinyCPUState // Expected CPU state
 	}{
 		{100, cpuOK},
@@ -577,14 +577,14 @@ func TestJLEInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{-1, 0, 0, 1, 0, 1, 0, 0}
+	tm.registers = [NUM_REGS]int32{-1, 0, 0, 1, 0, 1, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"JLE", []int{0, 100, 2}, iopRA} // pcreg -> 100
-	tm.instruction_memory[2] = TinyInstruction{"JLE", []int{5, 5, 3}, iopRA}   // !(pcreg -> 6)
-	tm.instruction_memory[100] = TinyInstruction{"JLE", []int{1, 3, 0}, iopRA} // pcreg -> 2
+	tm.instruction_memory[0] = TinyInstruction{"JLE", []int32{0, 100, 2}, iopRA} // pcreg -> 100
+	tm.instruction_memory[2] = TinyInstruction{"JLE", []int32{5, 5, 3}, iopRA}   // !(pcreg -> 6)
+	tm.instruction_memory[100] = TinyInstruction{"JLE", []int32{1, 3, 0}, iopRA} // pcreg -> 2
 
 	cases := []struct {
-		expected_pc  int          // Expected PC value
+		expected_pc  int32        // Expected PC value
 		expected_cpu TinyCPUState // Expected CPU state
 	}{
 		{100, cpuOK},
@@ -610,14 +610,14 @@ func TestJGEInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{1, 0, 0, 1, 0, -11, 0, 0}
+	tm.registers = [NUM_REGS]int32{1, 0, 0, 1, 0, -11, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"JGE", []int{0, 100, 2}, iopRA} // pcreg -> 100
-	tm.instruction_memory[2] = TinyInstruction{"JGE", []int{5, 5, 3}, iopRA}   // !(pcreg -> 6)
-	tm.instruction_memory[100] = TinyInstruction{"JGE", []int{1, 1, 0}, iopRA} // pcreg -> 2
+	tm.instruction_memory[0] = TinyInstruction{"JGE", []int32{0, 100, 2}, iopRA} // pcreg -> 100
+	tm.instruction_memory[2] = TinyInstruction{"JGE", []int32{5, 5, 3}, iopRA}   // !(pcreg -> 6)
+	tm.instruction_memory[100] = TinyInstruction{"JGE", []int32{1, 1, 0}, iopRA} // pcreg -> 2
 
 	cases := []struct {
-		expected_pc  int          // Expected PC value
+		expected_pc  int32        // Expected PC value
 		expected_cpu TinyCPUState // Expected CPU state
 	}{
 		{100, cpuOK},
@@ -643,14 +643,14 @@ func TestJGTInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{1, 100, 0, 1, 0, -11, 0, 0}
+	tm.registers = [NUM_REGS]int32{1, 100, 0, 1, 0, -11, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"JGT", []int{0, 100, 2}, iopRA} // pcreg -> 100
-	tm.instruction_memory[2] = TinyInstruction{"JGT", []int{5, 5, 3}, iopRA}   // !(pcreg -> 6)
-	tm.instruction_memory[100] = TinyInstruction{"JGT", []int{1, 1, 0}, iopRA} // pcreg -> 2
+	tm.instruction_memory[0] = TinyInstruction{"JGT", []int32{0, 100, 2}, iopRA} // pcreg -> 100
+	tm.instruction_memory[2] = TinyInstruction{"JGT", []int32{5, 5, 3}, iopRA}   // !(pcreg -> 6)
+	tm.instruction_memory[100] = TinyInstruction{"JGT", []int32{1, 1, 0}, iopRA} // pcreg -> 2
 
 	cases := []struct {
-		expected_pc  int          // Expected PC value
+		expected_pc  int32        // Expected PC value
 		expected_cpu TinyCPUState // Expected CPU state
 	}{
 		{100, cpuOK},
@@ -676,14 +676,14 @@ func TestJEQInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{0, 0, 0, 1, 0, -11, 0, 0}
+	tm.registers = [NUM_REGS]int32{0, 0, 0, 1, 0, -11, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"JEQ", []int{0, 100, 2}, iopRA} // pcreg -> 100
-	tm.instruction_memory[2] = TinyInstruction{"JEQ", []int{5, 5, 3}, iopRA}   // !(pcreg -> 6)
-	tm.instruction_memory[100] = TinyInstruction{"JEQ", []int{1, 2, 0}, iopRA} // pcreg -> 2
+	tm.instruction_memory[0] = TinyInstruction{"JEQ", []int32{0, 100, 2}, iopRA} // pcreg -> 100
+	tm.instruction_memory[2] = TinyInstruction{"JEQ", []int32{5, 5, 3}, iopRA}   // !(pcreg -> 6)
+	tm.instruction_memory[100] = TinyInstruction{"JEQ", []int32{1, 2, 0}, iopRA} // pcreg -> 2
 
 	cases := []struct {
-		expected_pc  int          // Expected PC value
+		expected_pc  int32        // Expected PC value
 		expected_cpu TinyCPUState // Expected CPU state
 	}{
 		{100, cpuOK},
@@ -709,14 +709,14 @@ func TestJNEInstruction(t *testing.T) {
 
 	tm.initializeMachine(true)
 	// Stuff some values into the registers
-	tm.registers = [NUM_REGS]int{1, -145, 0, 1, 0, 0, 0, 0}
+	tm.registers = [NUM_REGS]int32{1, -145, 0, 1, 0, 0, 0, 0}
 
-	tm.instruction_memory[0] = TinyInstruction{"JNE", []int{0, 100, 2}, iopRA} // pcreg -> 100
-	tm.instruction_memory[2] = TinyInstruction{"JNE", []int{5, 5, 3}, iopRA}   // !(pcreg -> 6)
-	tm.instruction_memory[100] = TinyInstruction{"JNE", []int{1, 1, 0}, iopRA} // pcreg -> 2
+	tm.instruction_memory[0] = TinyInstruction{"JNE", []int32{0, 100, 2}, iopRA} // pcreg -> 100
+	tm.instruction_memory[2] = TinyInstruction{"JNE", []int32{5, 5, 3}, iopRA}   // !(pcreg -> 6)
+	tm.instruction_memory[100] = TinyInstruction{"JNE", []int32{1, 1, 0}, iopRA} // pcreg -> 2
 
 	cases := []struct {
-		expected_pc  int          // Expected PC value
+		expected_pc  int32        // Expected PC value
 		expected_cpu TinyCPUState // Expected CPU state
 	}{
 		{100, cpuOK},
@@ -744,17 +744,17 @@ func TestDMEM_ERR_State(t *testing.T) {
 
 	cases := []struct {
 		given_inst   TinyInstruction // The instruction to execute
-		expected_pc  int             // Expected PC value
+		expected_pc  int32           // Expected PC value
 		expected_cpu TinyCPUState    // Expected CPU state
 	}{
-		{TinyInstruction{"LD", []int{0, DEF_MEM_SIZE, 1}, iopRM}, 1, cpuDMEM_ERR},
-		{TinyInstruction{"LD", []int{0, -1, 1}, iopRM}, 1, cpuDMEM_ERR},
-		{TinyInstruction{"ST", []int{0, 0, 0}, iopRM}, 1, cpuDMEM_ERR},
-		{TinyInstruction{"ST", []int{0, -1, 1}, iopRM}, 1, cpuDMEM_ERR},
+		{TinyInstruction{"LD", []int32{0, DEF_MEM_SIZE, 1}, iopRM}, 1, cpuDMEM_ERR},
+		{TinyInstruction{"LD", []int32{0, -1, 1}, iopRM}, 1, cpuDMEM_ERR},
+		{TinyInstruction{"ST", []int32{0, 0, 0}, iopRM}, 1, cpuDMEM_ERR},
+		{TinyInstruction{"ST", []int32{0, -1, 1}, iopRM}, 1, cpuDMEM_ERR},
 	}
 	for i, c := range cases {
 		// Stuff some values into the registers
-		tm.registers = [NUM_REGS]int{DEF_MEM_SIZE, 0, 0, 0, 0, 0, 0, 0}
+		tm.registers = [NUM_REGS]int32{DEF_MEM_SIZE, 0, 0, 0, 0, 0, 0, 0}
 		tm.instruction_memory[0] = c.given_inst // Load the instruction that should be a memory violation
 
 		tm.stepProgram()
@@ -776,13 +776,13 @@ func TestIMEM_ERR_State(t *testing.T) {
 
 	tm.initializeMachine(true)
 
-	cases := []int{
+	cases := []int32{
 		-1,
 		DEF_MEM_SIZE,
 	}
 	for i, pc := range cases {
 		// Stuff some values into the registers
-		tm.registers = [NUM_REGS]int{0, 0, 0, 0, 0, 0, 0, pc}
+		tm.registers = [NUM_REGS]int32{0, 0, 0, 0, 0, 0, 0, pc}
 
 		tm.stepProgram()
 
