@@ -535,17 +535,17 @@ func main() {
 
 	if len(flag.Args()) < 1 {
 		log.Fatal("You must supply a program as the first argument.")
-	} else {
-		programfile, err := os.Open(flag.Args()[0])
-		if err != nil {
-			log.Fatalf("Error reading from %s: %s\n", flag.Args()[0], err)
-		}
-		defer programfile.Close()
+	}
 
-		if tm.loadProgram(flag.Args()[0], programfile) {
-			tm.Interact()
-		} else {
-			log.Fatalf("Error loading program from:", flag.Args()[0])
-		}
+	programfile, err := os.Open(flag.Args()[0])
+	if err != nil {
+		log.Fatalf("Error reading from %s: %s\n", flag.Args()[0], err)
+	}
+	defer programfile.Close()
+
+	if tm.loadProgram(flag.Args()[0], programfile) {
+		tm.Interact()
+	} else {
+		log.Fatalf("Error loading program from:", flag.Args()[0])
 	}
 }
