@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -533,19 +534,18 @@ func main() {
 	flag.Parse()
 
 	if len(flag.Args()) < 1 {
-		tm.speak("You must supply a program as the first argument.")
+		log.Fatal("You must supply a program as the first argument.")
 	} else {
 		programfile, err := os.Open(flag.Args()[0])
 		if err != nil {
-			fmt.Printf("Error reading from %s: %s\n", flag.Args()[0], err)
-			os.Exit(1)
+			log.Fatalf("Error reading from %s: %s\n", flag.Args()[0], err)
 		}
 		defer programfile.Close()
 
 		if tm.loadProgram(flag.Args()[0], programfile) {
 			tm.Interact()
 		} else {
-			tm.speak("Error loading program from:", flag.Args()[0])
+			log.Fatalf("Error loading program from:", flag.Args()[0])
 		}
 	}
 }
