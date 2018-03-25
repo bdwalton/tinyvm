@@ -511,10 +511,7 @@ func (tm *TinyMachine) Interact() {
 		}
 
 		command := input[:len(input)-1]
-		menuitem, ok := menu[command]
-
-		switch ok {
-		case true:
+		if menuitem, ok := menu[command]; ok {
 			switch menuitem.action {
 			case nil:
 				// Show the help text if the menu key has no action
@@ -524,7 +521,7 @@ func (tm *TinyMachine) Interact() {
 			default:
 				menuitem.action(tm)
 			}
-		default:
+		} else {
 			tm.speak("Not implemented yet. Try 'h' for help.")
 		}
 	}
