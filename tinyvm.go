@@ -14,12 +14,15 @@ import (
 )
 
 // If --mem_size isn't passed, the default size of data and instruction memory.
-const DEF_MEM_SIZE = 1024
-const NUM_REGS = 8 // The total number of registers available.
-const PC_REG = 7   // The registered used as the program counter.
+const (
+	DEF_MEM_SIZE = 1024
+	NUM_REGS     = 8 // The total number of registers available.
+	PC_REG       = 7 // The registered used as the program counter.
+)
 
-var mem_size = flag.Uint64("mem_size", DEF_MEM_SIZE,
-	"This size of program and data memory.")
+var (
+	mem_size = flag.Uint64("mem_size", DEF_MEM_SIZE, "This size of program and data memory.")
+)
 
 type menuAction struct {
 	desc   string
