@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -482,25 +481,17 @@ func handleTrace(tm *TinyMachine) {
 
 func (tm *TinyMachine) Interact() {
 	menu := map[string]menuAction{
-		"c": menuAction{"clear machine state", handleClear},
-		"g": menuAction{"run program to halt state", handleGo},
-		"d": menuAction{"display data memory", handleDataMemoryDump},
-		"h": menuAction{"display this help text", nil},
 		"?": menuAction{"display this help text", nil},
+		"c": menuAction{"clear machine state", handleClear},
+		"d": menuAction{"display data memory", handleDataMemoryDump},
+		"g": menuAction{"run program to halt state", handleGo},
+		"h": menuAction{"display this help text", nil},
 		"i": menuAction{"display instruction memory", handleInstructionMemoryDump},
 		"q": menuAction{"quit the tiny machine simulator", handleQuit},
 		"r": menuAction{"dump register contents", handleRegDump},
 		"s": menuAction{"step program forward by one instruction", handleStep},
 		"t": menuAction{"toggle execution tracing", handleTrace},
 	}
-
-	sorted_keys := make([]string, len(menu))
-	i := 0
-	for k, _ := range menu {
-		sorted_keys[i] = k
-		i++
-	}
-	sort.Strings(sorted_keys)
 
 	tm.speak("Tiny Machine simulation (enter h for help)")
 
@@ -527,8 +518,8 @@ func (tm *TinyMachine) Interact() {
 			switch menuitem.action {
 			case nil:
 				// Show the help text if the menu key has no action
-				for _, k := range sorted_keys {
-					fmt.Printf("%s: %s\n", k, menu[k].desc)
+				for k, m := range menu {
+					fmt.Printf("%s: %s\n", k, m.desc)
 				}
 			default:
 				menuitem.action(tm)
